@@ -36,8 +36,8 @@ namespace Server
 
             try
             {
-                var json1 = GetRequestData(stream);
-                var slaeData = JsonConvert.DeserializeObject<SlaeData>(json1);
+                var clientData = GetRequestData(stream);
+                var slaeData = JsonConvert.DeserializeObject<SlaeData>(clientData);
                 Console.WriteLine($"Решение СЛАУ клиента {client.Client.RemoteEndPoint}...");
                 var x = GaussSolver.Solve(slaeData.Matrix, slaeData.Vector);
                 Console.WriteLine($"СЛАУ решено для клиента {client.Client.RemoteEndPoint}. Идёт отправка данных...");
