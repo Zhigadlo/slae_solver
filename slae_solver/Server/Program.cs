@@ -1,9 +1,8 @@
-﻿using Server;
+﻿Server.Server? server = null;
 
-TcpServer? server = null;
 try
 {
-    server = new TcpServer();
+    server = new Server.Server();
     server.Start();
 }
 catch (Exception ex)
@@ -17,5 +16,5 @@ finally
     server?.Dispose();
 }
 
-Console.WriteLine("\nHit enter to continue...");
+Console.WriteLine("\nPress Enter to continue...");
 Console.Read();

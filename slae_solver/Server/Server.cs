@@ -5,15 +5,15 @@ using System.Text;
 
 namespace Server
 {
-    public class TcpServer : IDisposable
+    public class Server : IDisposable
     {
         private readonly TcpListener _tcpListener;
         private bool _isDisposed = false;
-        private Settings _settings;
-        public TcpServer()
+        private ServerSettings _settings;
+        public Server()
         {
-            _settings = new Settings();
-            _tcpListener = new TcpListener(_settings.IP, _settings.Port);
+            _settings = new ServerSettings();
+            _tcpListener = new TcpListener(_settings.Ip, _settings.Port);
             SetUpThreadPool();
         }
 

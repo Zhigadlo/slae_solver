@@ -3,14 +3,14 @@ using System.Net;
 
 namespace Server
 {
-    public class Settings
+    public class ServerSettings
     {
         private static IConfiguration? _config = null;
         private static IPAddress? _ip = null;
         private static int _port = -1;
         private static int _minThreadCount = -1;
         private static int _maxThreadCount = -1;
-        public IPAddress IP 
+        public IPAddress Ip
         {
             get
             {
@@ -24,14 +24,14 @@ namespace Server
         {
             get
             {
-                if(_port == -1)
+                if (_port == -1)
                     _port = GetPort();
 
                 return _port;
             }
         }
-        public IConfiguration Configuration 
-        { 
+        public IConfiguration Configuration
+        {
             get
             {
                 if (_config == null)
@@ -45,7 +45,7 @@ namespace Server
         {
             get
             {
-                if(_minThreadCount == -1)
+                if (_minThreadCount == -1)
                     _minThreadCount = GetMinThreadCount();
                 return _minThreadCount;
             }
@@ -55,7 +55,7 @@ namespace Server
         {
             get
             {
-                if(_maxThreadCount == -1)
+                if (_maxThreadCount == -1)
                     _maxThreadCount = GetMaxThreadCount();
                 return _maxThreadCount;
             }
@@ -63,22 +63,22 @@ namespace Server
 
         private IPAddress GetIp()
         {
-            return IPAddress.Parse(Configuration.GetSection("NetworkSection").GetSection("IP").Value);
+            return IPAddress.Parse(Configuration.GetSection("NetworkSettings").GetSection("IP").Value);
         }
 
         private int GetPort()
         {
-            return int.Parse(Configuration.GetSection("NetworkSection").GetSection("port").Value);
+            return int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
         }
 
         private int GetMinThreadCount()
         {
-            return int.Parse(Configuration.GetSection("NetworkSection").GetSection("minThreadCount").Value);
+            return int.Parse(Configuration.GetSection("NetworkSettings").GetSection("minThreadCount").Value);
         }
 
         private int GetMaxThreadCount()
         {
-            return int.Parse(Configuration.GetSection("NetworkSection").GetSection("maxThreadCount").Value);
+            return int.Parse(Configuration.GetSection("NetworkSettings").GetSection("maxThreadCount").Value);
         }
 
         private IConfiguration GetConfiguration()
