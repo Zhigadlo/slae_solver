@@ -6,21 +6,18 @@ namespace Client
     {
         public SlaeData ReadSlaeData()
         {
-            Console.Write("Путь к файлу с матрицей: ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            var matrixPath = Console.ReadLine();
-            Console.ResetColor();
+            var matrixPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\matrix.txt";
             var matrix = ReadMatrix(matrixPath);
-            Console.Write("Путь к файлу с вектором свободных членов: ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            var vectorPath = Console.ReadLine();
+            var vectorPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\vector.txt";
             Console.ResetColor();
             var vector = ReadVector(vectorPath);
             var slaeData = new SlaeData(matrix, vector);
+            Console.WriteLine("Slae data:");
+            SlaeDataOutput(slaeData);
             return slaeData;
         }
 
-        private IReadOnlyList<float[]> ReadMatrix(string filename)
+        private List<float[]> ReadMatrix(string filename)
         {
             using (var reader = new StreamReader(filename))
             {
@@ -28,13 +25,8 @@ namespace Client
 
                 while (!reader.EndOfStream)
                 {
-                    var elements = reader.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    matrix.Add(new float[elements.Length]);
-
-                    for (int i = 0; i < elements.Length; i++)
-                    {
-                        matrix[matrix.Count - 1][i] = Convert.ToSingle(elements[i]);
-                    }
+                    var elements = reader.ReadLine().Split(' ').Select(float.Parse).ToArray();
+                    matrix.Add(elements);
                 }
 
                 return matrix;
@@ -52,6 +44,46 @@ namespace Client
             }
 
             return vector;
+        }
+
+        public void MatrixTest()
+        {
+            var matrixPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\matrix.txt";
+            var matrix = ReadMatrix(matrixPath);
+            Console.WriteLine("Matrix:");
+            MatrixOutput(matrix);
+            var vectorPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\vector.txt";
+            Console.WriteLine("Vector:");
+            var vector = ReadVector(vectorPath);
+            VectorOutput(vector);
+
+        }
+
+        private void MatrixOutput(List<float[]> matrix)
+        {
+            foreach (var element in matrix)
+            {
+                for (int i = 0; i < element.Length; i++)
+                {
+                    Console.Write(element[i] + " ");
+                }
+                Console.WriteLine();
+            }
+        }
+        private void VectorOutput(float[] vector)
+        {
+            for(int i = 0; i < vector.Length; i++)
+            {
+                Console.WriteLine(vector[i]);
+            }
+        }
+
+        private void SlaeDataOutput(SlaeData data)
+        {
+            for(int i = 0; i < data.Vector.Length; i++)
+            {
+                Console.WriteLine(string.Join(" ", data.Matrix[i].Select(p => p.ToString()).ToArray()) + " " + data.Vector[i]);
+            }
         }
     }
 }

@@ -40,15 +40,20 @@ namespace Server
                 var slaeData = JsonConvert.DeserializeObject<SlaeData>(clientData);
                 Console.WriteLine($"Решение СЛАУ клиента {client.Client.RemoteEndPoint}...");
                 var x = GaussSolver.Solve(slaeData.Matrix, slaeData.Vector);
+                foreach (var element in x)
+                    Console.WriteLine(element);
                 Console.WriteLine($"СЛАУ решено для клиента {client.Client.RemoteEndPoint}. Идёт отправка данных...");
                 var xJson = JsonConvert.SerializeObject(x);
                 SendResponse(stream, xJson);
-                stream.Close();
-                client.Close();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Произошла ошибка: {ex.Message}");
+            }
+            finally
+            {
+                stream.Close();
+                client.Close();
             }
         }
 

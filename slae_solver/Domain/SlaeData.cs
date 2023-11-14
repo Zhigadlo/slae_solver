@@ -2,12 +2,12 @@
 {
     public class SlaeData
     {
-        public SlaeData(IReadOnlyList<float[]> matrix, float[] vector)
+        public SlaeData(List<float[]> matrix, float[] vector)
         {
             Matrix = matrix;
             Vector = vector;
         }
         public float[] Vector { get; set; }
-        public IReadOnlyList<float[]> Matrix { get; set; }
+        public List<float[]> Matrix { get; set; }
     }
 }

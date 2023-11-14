@@ -1,13 +1,11 @@
-﻿Server.Server? server = null;
+﻿Server.Server? server = new Server.Server();
 
 try
 {
-    server = new Server.Server();
     server.Start();
 }
 catch (Exception ex)
 {
-    Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine(ex.Message);
     Console.ResetColor();
 }

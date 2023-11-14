@@ -39,7 +39,6 @@ namespace Client
             } while (stream.DataAvailable);
 
             stream.Close();
-            Dispose();
 
             return Encoding.UTF8.GetString(bytes1.ToArray());
         }
