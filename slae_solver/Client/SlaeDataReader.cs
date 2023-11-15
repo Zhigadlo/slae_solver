@@ -4,13 +4,20 @@ namespace Client
 {
     public class SlaeDataReader
     {
+        private readonly string _matrixPath;
+        private readonly string _vectorPath;
+        public SlaeDataReader()
+        {
+            var settings = new ClientSettings();
+            var path = Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location).FullName;
+            _matrixPath = Path.Combine(path, settings.MatrixPath);
+            _vectorPath = Path.Combine(path, settings.VectorPath);
+        }
         public SlaeData ReadSlaeData()
         {
-            var matrixPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\matrix.txt";
-            var matrix = ReadMatrix(matrixPath);
-            var vectorPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\vector.txt";
+            var matrix = ReadMatrix(_matrixPath);
             Console.ResetColor();
-            var vector = ReadVector(vectorPath);
+            var vector = ReadVector(_vectorPath);
             var slaeData = new SlaeData(matrix, vector);
             Console.WriteLine("Slae data:");
             SlaeDataOutput(slaeData);
@@ -46,37 +53,6 @@ namespace Client
             return vector;
         }
 
-        public void MatrixTest()
-        {
-            var matrixPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\matrix.txt";
-            var matrix = ReadMatrix(matrixPath);
-            Console.WriteLine("Matrix:");
-            MatrixOutput(matrix);
-            var vectorPath = "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\vector.txt";
-            Console.WriteLine("Vector:");
-            var vector = ReadVector(vectorPath);
-            VectorOutput(vector);
-
-        }
-
-        private void MatrixOutput(List<float[]> matrix)
-        {
-            foreach (var element in matrix)
-            {
-                for (int i = 0; i < element.Length; i++)
-                {
-                    Console.Write(element[i] + " ");
-                }
-                Console.WriteLine();
-            }
-        }
-        private void VectorOutput(float[] vector)
-        {
-            for(int i = 0; i < vector.Length; i++)
-            {
-                Console.WriteLine(vector[i]);
-            }
-        }
 
         private void SlaeDataOutput(SlaeData data)
         {

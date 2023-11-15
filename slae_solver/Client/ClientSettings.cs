@@ -7,6 +7,30 @@ namespace Client
         private static IConfiguration? _config = null;
         private static string? _hostname = null;
         private static int _port = -1;
+        private static string? _matrixPath;
+        private static string? _vectorPath;
+
+        public string MatrixPath
+        {
+            get
+            {
+                if (_matrixPath == null)
+                    _matrixPath = GetMatrixPath();
+
+                return _matrixPath;
+            }
+        }
+
+        public string VectorPath
+        {
+            get
+            {
+                if(_vectorPath == null)
+                    _vectorPath = GetVectorPath();
+
+                return _vectorPath;
+            }
+        }
         public string HostName
         {
             get
@@ -45,6 +69,16 @@ namespace Client
         private int GetPort()
         {
             return int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
+        }
+
+        private string GetMatrixPath()
+        {
+            return Configuration.GetSection("NetworkSettings").GetSection("matrixfile").Value;
+        }
+
+        private string GetVectorPath()
+        {
+            return Configuration.GetSection("NetworkSettings").GetSection("vectorfile").Value;
         }
         private IConfiguration GetConfiguration()
         {
