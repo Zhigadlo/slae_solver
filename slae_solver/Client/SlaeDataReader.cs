@@ -56,7 +56,7 @@ namespace Client
 
         private void SlaeDataOutput(SlaeData data)
         {
-            for(int i = 0; i < data.Vector.Length; i++)
+            for (int i = 0; i < data.Vector.Length; i++)
             {
                 Console.WriteLine(string.Join(" ", data.Matrix[i].Select(p => p.ToString()).ToArray()) + " " + data.Vector[i]);
             }

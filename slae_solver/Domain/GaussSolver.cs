@@ -1,4 +1,4 @@
-﻿namespace Server
+﻿namespace Domain
 {
     public static class GaussSolver
     {

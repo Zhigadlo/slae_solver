@@ -25,7 +25,7 @@ namespace Client
         {
             get
             {
-                if(_vectorPath == null)
+                if (_vectorPath == null)
                     _vectorPath = GetVectorPath();
 
                 return _vectorPath;
