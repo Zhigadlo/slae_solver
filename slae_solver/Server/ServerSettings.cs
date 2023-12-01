@@ -8,8 +8,9 @@ namespace Server
         private static IConfiguration? _config = null;
         private static IPAddress? _ip = null;
         private static int _port = -1;
-        private static int _minThreadCount = -1;
-        private static int _maxThreadCount = -1;
+        private static string _dataPath = null;
+        private static string _matrixFilename = null;
+        private static string _vectorFilename = null;
         public IPAddress Ip
         {
             get
@@ -40,27 +41,52 @@ namespace Server
                 return _config;
             }
         }
-
-        public int MinThreadCount
+        public string DataPath
         {
             get
             {
-                if (_minThreadCount == -1)
-                    _minThreadCount = GetMinThreadCount();
-                return _minThreadCount;
+                if (_dataPath == null)
+                    _dataPath = GetDataPath();
+
+                return _dataPath;
             }
         }
 
-        public int MaxThreadCount
+        public string MatrixFilename
         {
             get
             {
-                if (_maxThreadCount == -1)
-                    _maxThreadCount = GetMaxThreadCount();
-                return _maxThreadCount;
+                if( _matrixFilename == null)
+                    _matrixFilename = GetMatrixFilename();
+
+                return _matrixFilename;
             }
         }
 
+        public string VectorFilename
+        {
+            get
+            {
+                if(_vectorFilename == null)
+                    _vectorFilename = GetVectorFilename();
+
+                return _vectorFilename;
+            }
+        }
+
+        private string GetDataPath()
+        {
+            return Configuration.GetSection("dataPath").Value;
+        }
+        private string GetVectorFilename()
+        {
+            return Configuration.GetSection("files").GetSection("vector").Value;
+        }
+
+        private string GetMatrixFilename()
+        {
+            return Configuration.GetSection("files").GetSection("matrix").Value;
+        }
         private IPAddress GetIp()
         {
             return IPAddress.Parse(Configuration.GetSection("NetworkSettings").GetSection("IP").Value);
@@ -69,16 +95,6 @@ namespace Server
         private int GetPort()
         {
             return int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
-        }
-
-        private int GetMinThreadCount()
-        {
-            return int.Parse(Configuration.GetSection("NetworkSettings").GetSection("minThreadCount").Value);
-        }
-
-        private int GetMaxThreadCount()
-        {
-            return int.Parse(Configuration.GetSection("NetworkSettings").GetSection("maxThreadCount").Value);
         }
 
         private IConfiguration GetConfiguration()

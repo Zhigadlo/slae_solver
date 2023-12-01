@@ -2,7 +2,10 @@
   "NetworkSettings": {
     "IP": "127.0.0.1",
     "port": "8080",
-    "minThreadCount": 2,
-    "maxThreadCount": 12
+    "dataPath": "D:\\Work\\Projects\\test\\test",
+    "files": {
+      "matrix": "test1.A",
+      "vector": "test1.B"
+    }
   }
 }
