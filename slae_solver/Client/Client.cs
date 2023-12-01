@@ -29,13 +29,12 @@ namespace Client
             string data = Encoding.UTF8.GetString(buffer);
             return JsonConvert.DeserializeObject<ClientData>(data);
         }
-        public void SendRequest(string message)
+        public void SendMessage(string message)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(message);
             _stream.Write(bytes, 0, bytes.Length);
             _stream.Flush();
         }
-
         public float JacobiHandle(ClientData data)
         {
             float sum = 0f;

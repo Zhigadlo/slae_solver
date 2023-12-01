@@ -13,7 +13,7 @@
             }
 
             var sum = client.JacobiHandle(data);
-            client.SendRequest(sum.ToString());
+            client.SendMessage(sum.ToString());
             Console.WriteLine($"Sent data to server: {sum}");
         }
 
