@@ -1,8 +1,6 @@
 ﻿{
   "NetworkSettings": {
     "hostname": "127.0.0.1",
-    "port": "8080",
-    "matrixfile":  "matrix.txt",
-    "vectorfile":  "vector.txt"
+    "port": "8080"
   }
 }

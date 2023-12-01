@@ -7,5 +7,7 @@
         public int StartIter { get; set; }
         public int EndIter { get; set; }
         public int Iteration { get; set; }
+
+        public bool IsSlaeSolved { get; set; } = false;
     }
 }

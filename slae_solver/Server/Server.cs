@@ -26,7 +26,7 @@ namespace Server
         {
             Console.WriteLine("Enter number of clinets: ");
             int clientCount = int.Parse(Console.ReadLine());
-            
+
             _tcpListener.Start();
             Console.WriteLine("Waiting for client connections...");
             int i = 0;
@@ -51,31 +51,27 @@ namespace Server
 
             Console.WriteLine("SLAE solution:");
             for (i = 0; i < x.Length; i++)
-            {
                 Console.WriteLine(x[i]);
-            }
+        }
+        private static string GetRequestData(NetworkStream stream)
+        {
+            byte[] buffer = new byte[256];
+            List<byte> bytes = new List<byte>();
+
+            do
+            {
+                int read = stream.Read(buffer, 0, buffer.Length);
+                bytes.AddRange(buffer.Take(read));
+            } while (stream.DataAvailable);
+
+            return Encoding.UTF8.GetString(bytes.ToArray());
+        }
+        private static void SendResponse(NetworkStream stream, string json)
+        {
+            var buffer = Encoding.UTF8.GetBytes(json);
+            stream.Write(buffer, 0, buffer.Length);
         }
 
-        private void SetClientData(int clientsCount, int iteration, int size, float[] matrixRow, float[] previous)
-        {
-            _clientData = new List<ClientData>(clientsCount);
-            int step = size / clientsCount;
-            int startIter;
-            int endIter;
-            for(int i = 0; i <  clientsCount; i++)
-            {
-                startIter = step * i;
-                endIter = startIter + step;
-                _clientData.Add(new ClientData()
-                {
-                    MatrixRow = matrixRow,
-                    Previous = previous,
-                    Iteration = iteration,
-                    StartIter = startIter,
-                    EndIter = endIter
-                });
-            }
-        }
         private float[] Solve(List<float[]> matrix, float[] vector, int clientCount, int iterations = 1000)
         {
             int size = vector.Length;
@@ -106,6 +102,27 @@ namespace Server
             }
 
             return current;
+        }
+
+        private void SetClientData(int clientsCount, int iteration, int size, float[] matrixRow, float[] previous)
+        {
+            _clientData = new List<ClientData>(clientsCount);
+            int step = size / clientsCount;
+            int startIter;
+            int endIter;
+            for (int i = 0; i < clientsCount; i++)
+            {
+                startIter = step * i;
+                endIter = startIter + step;
+                _clientData.Add(new ClientData()
+                {
+                    MatrixRow = matrixRow,
+                    Previous = previous,
+                    Iteration = iteration,
+                    StartIter = startIter,
+                    EndIter = endIter
+                });
+            }
         }
         private float SendDataToClient(int key, ClientData data)
         {
@@ -142,24 +159,6 @@ namespace Server
         //        client.Close();
         //    }
         //}
-        private static string GetRequestData(NetworkStream stream)
-        {
-            byte[] buffer = new byte[256];
-            List<byte> bytes = new List<byte>();
-
-            do
-            {
-                int read = stream.Read(buffer, 0, buffer.Length);
-                bytes.AddRange(buffer.Take(read));
-            } while (stream.DataAvailable);
-
-            return Encoding.UTF8.GetString(bytes.ToArray());
-        }
-        private static void SendResponse(NetworkStream stream, string json)
-        {
-            var buffer = Encoding.UTF8.GetBytes(json);
-            stream.Write(buffer, 0, buffer.Length);
-        }
 
         private List<float[]> ReadMatrix(string filename)
         {
@@ -176,7 +175,6 @@ namespace Server
                 return matrix;
             }
         }
-
         private float[] ReadVector(string filename)
         {
             var elements = File.ReadAllLines(filename);
@@ -189,13 +187,14 @@ namespace Server
 
             return vector;
         }
+
         public void Dispose()
         {
             if (!_isDisposed)
             {
                 _tcpListener.Stop();
                 _isDisposed = true;
-                for(int i = 0; i < _clients.Count(); i++)
+                for (int i = 0; i < _clients.Count(); i++)
                 {
                     _clientStreams[i].Close();
                     _clients[i].Close();

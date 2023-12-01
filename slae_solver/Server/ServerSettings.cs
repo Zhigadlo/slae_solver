@@ -8,9 +8,10 @@ namespace Server
         private static IConfiguration? _config = null;
         private static IPAddress? _ip = null;
         private static int _port = -1;
-        private static string _dataPath = null;
-        private static string _matrixFilename = null;
-        private static string _vectorFilename = null;
+        private static string? _dataPath = null;
+        private static string? _matrixFilename = null;
+        private static string? _vectorFilename = null;
+
         public IPAddress Ip
         {
             get
@@ -51,52 +52,32 @@ namespace Server
                 return _dataPath;
             }
         }
-
         public string MatrixFilename
         {
             get
             {
-                if( _matrixFilename == null)
+                if (_matrixFilename == null)
                     _matrixFilename = GetMatrixFilename();
 
                 return _matrixFilename;
             }
         }
-
         public string VectorFilename
         {
             get
             {
-                if(_vectorFilename == null)
+                if (_vectorFilename == null)
                     _vectorFilename = GetVectorFilename();
 
                 return _vectorFilename;
             }
         }
 
-        private string GetDataPath()
-        {
-            return Configuration.GetSection("dataPath").Value;
-        }
-        private string GetVectorFilename()
-        {
-            return Configuration.GetSection("files").GetSection("vector").Value;
-        }
-
-        private string GetMatrixFilename()
-        {
-            return Configuration.GetSection("files").GetSection("matrix").Value;
-        }
-        private IPAddress GetIp()
-        {
-            return IPAddress.Parse(Configuration.GetSection("NetworkSettings").GetSection("IP").Value);
-        }
-
-        private int GetPort()
-        {
-            return int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
-        }
-
+        private string GetDataPath() => Configuration.GetSection("dataPath").Value;
+        private string GetVectorFilename() => Configuration.GetSection("files").GetSection("vector").Value;
+        private string GetMatrixFilename() => Configuration.GetSection("files").GetSection("matrix").Value;
+        private IPAddress GetIp() => IPAddress.Parse(Configuration.GetSection("NetworkSettings").GetSection("IP").Value);
+        private int GetPort() => int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
         private IConfiguration GetConfiguration()
         {
             string configFileName = "config.json";

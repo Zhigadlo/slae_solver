@@ -9,43 +9,52 @@ namespace Client
     {
         private readonly TcpClient _client;
         private bool _isDisposed;
+        private static NetworkStream _stream;
 
         public Client()
         {
             var settings = new ClientSettings();
             _client = new TcpClient(settings.HostName, settings.Port);
+            _stream = _client.GetStream();
         }
 
-        public float[] SendRequestToSolve(SlaeData slaeData)
+        public ClientData GetDataFromServer()
         {
-            var json = JsonConvert.SerializeObject(slaeData);
-            var json1 = SendRequest(json);
-            return JsonConvert.DeserializeObject<float[]>(json1);
-        }
-        private string SendRequest(string json)
-        {
-            var stream = _client.GetStream();
-            byte[] bytes = Encoding.UTF8.GetBytes(json);
-            stream.Write(bytes, 0, bytes.Length);
-            stream.Flush();
-
             byte[] buffer = new byte[256];
-            List<byte> bytes1 = new List<byte>();
 
             do
             {
-                int read = stream.Read(buffer, 0, buffer.Length);
-                bytes1.AddRange(buffer.Take(read));
-            } while (stream.DataAvailable);
+                int read = _stream.Read(buffer, 0, buffer.Length);
+            } while (_stream.DataAvailable);
+            string data = Encoding.UTF8.GetString(buffer);
+            return JsonConvert.DeserializeObject<ClientData>(data);
+        }
+        public void SendRequest(string message)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(message);
+            _stream.Write(bytes, 0, bytes.Length);
+            _stream.Flush();
+        }
 
-            stream.Close();
+        public float JacobiHandle(ClientData data)
+        {
+            float sum = 0f;
 
-            return Encoding.UTF8.GetString(bytes1.ToArray());
+            for (int i = data.StartIter; i < data.EndIter; i++)
+            {
+                if (data.Iteration != i)
+                {
+                    sum += data.MatrixRow[i] * data.Previous[i];
+                }
+            }
+
+            return sum;
         }
         public void Dispose()
         {
             if (!_isDisposed)
             {
+                _stream.Close();
                 _client.Close();
                 _isDisposed = true;
                 GC.SuppressFinalize(this);

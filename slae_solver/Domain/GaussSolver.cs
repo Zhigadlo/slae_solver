@@ -17,7 +17,7 @@
             {
                 Array.Copy(current, previous, size);
 
-                for (int i = 0; i < size; i++)
+                Parallel.For(0, size, i =>
                 {
                     float sum = 0f;
 
@@ -30,7 +30,7 @@
                     }
 
                     current[i] = (vector[i] - sum) / matrix[i][i];
-                }
+                });
             }
 
             return current;
