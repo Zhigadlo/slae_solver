@@ -73,9 +73,9 @@ namespace Server
             }
         }
 
-        private string GetDataPath() => Configuration.GetSection("dataPath").Value;
-        private string GetVectorFilename() => Configuration.GetSection("files").GetSection("vector").Value;
-        private string GetMatrixFilename() => Configuration.GetSection("files").GetSection("matrix").Value;
+        private string GetDataPath() => Configuration.GetSection("NetworkSettings").GetSection("dataPath").Value;
+        private string GetVectorFilename() => Configuration.GetSection("NetworkSettings").GetSection("files").GetSection("vector").Value;
+        private string GetMatrixFilename() => Configuration.GetSection("NetworkSettings").GetSection("files").GetSection("matrix").Value;
         private IPAddress GetIp() => IPAddress.Parse(Configuration.GetSection("NetworkSettings").GetSection("IP").Value);
         private int GetPort() => int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
         private IConfiguration GetConfiguration()

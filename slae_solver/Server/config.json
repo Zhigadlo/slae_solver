@@ -2,10 +2,10 @@
   "NetworkSettings": {
     "IP": "127.0.0.1",
     "port": "8080",
-    "dataPath": "D:\\Work\\Projects\\test\\test",
+    "dataPath": "D:\\Work\\Projects\\slae_solver\\slae_solver\\SlaeSolverTests\\Files\\",
     "files": {
-      "matrix": "test1.A",
-      "vector": "test1.B"
+      "matrix": "M1.txt",
+      "vector": "V1.txt"
     }
   }
 }

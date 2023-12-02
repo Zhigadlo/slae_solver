@@ -13,24 +13,28 @@ namespace Server
         private List<TcpClient> _clients;
         private List<ClientData> _clientData;
         private Dictionary<int, NetworkStream> _clientStreams;
+        private int _clientCount;
         public Server()
         {
             _settings = new ServerSettings();
             _tcpListener = new TcpListener(_settings.Ip, _settings.Port);
-            _clientData = new List<ClientData>();
             _clients = new List<TcpClient>();
             _clientStreams = new Dictionary<int, NetworkStream>();
+
+            Console.WriteLine("Enter number of clinets: ");
+            int _clientCount = int.Parse(Console.ReadLine());
+
+            _clientData = new List<ClientData>(_clientCount);
+            for (int i = 0; i < _clientCount; i++)
+                _clientData.Add(new ClientData());
         }
 
         public void Start()
         {
-            Console.WriteLine("Enter number of clinets: ");
-            int clientCount = int.Parse(Console.ReadLine());
-
             _tcpListener.Start();
             Console.WriteLine("Waiting for client connections...");
             int i = 0;
-            while (i < clientCount)
+            while (i < _clientCount)
             {
                 var client = _tcpListener.AcceptTcpClient();
                 _clients.Add(client);
@@ -39,15 +43,19 @@ namespace Server
             }
 
             //открываем потоки для чтения и отправки данных клиентам
-            for (i = 0; i < clientCount; i++)
-                _clientStreams.Add(i, _clients[i].GetStream());
+            for (i = 0; i < _clientCount; i++)
+            {
+                var stream = _clients[i].GetStream();
+                _clientStreams.Add(i, stream);
+            }
+            
 
             var matrixPath = Path.Combine(_settings.DataPath, _settings.MatrixFilename);
             var vectorPath = Path.Combine(_settings.DataPath, _settings.VectorFilename);
             var matrix = ReadMatrix(matrixPath);
             var vector = ReadVector(vectorPath);
 
-            float[] x = Solve(matrix, vector, clientCount);
+            float[] x = Solve(matrix, vector, _clientCount);
 
             Console.WriteLine("SLAE solution:");
             for (i = 0; i < x.Length; i++)
@@ -55,7 +63,7 @@ namespace Server
 
             //отправка сообщений клиентам о решении СЛАУ
             var slaeSolvedData = new ClientData { IsSlaeSolved = true };
-            foreach(var stream in _clientStreams.Values)
+            foreach (var stream in _clientStreams.Values)
             {
                 SendMessage(stream, JsonConvert.SerializeObject(slaeSolvedData));
             }
@@ -79,7 +87,7 @@ namespace Server
             stream.Write(buffer, 0, buffer.Length);
         }
 
-        private float[] Solve(List<float[]> matrix, float[] vector, int clientCount, int iterations = 1000)
+        private float[] Solve(List<float[]> matrix, float[] vector, float eps = 0.00001f)
         {
             int size = vector.Length;
             float[] previous = new float[size];
@@ -90,45 +98,51 @@ namespace Server
                 current[i] = vector[i] / matrix[i][i];
             }
 
-            for (int iteration = 0; iteration < iterations; iteration++)
+            do
             {
                 Array.Copy(current, previous, size);
 
-                Parallel.For(0, size, i =>
+                for (int i = 0; i < size; i++)
                 {
                     float sum = 0f;
-                    SetClientData(clientCount, iteration, size, matrix[i], previous);
+                    SetClientData(i, size, matrix[i], previous);
 
-                    Parallel.For(0, clientCount, k =>
+                    Parallel.For(0, _clientCount, k =>
                     {
                         sum += SendDataToClient(k, _clientData[k]);
                     });
 
                     current[i] = (vector[i] - sum) / matrix[i][i];
-                });
+                };
             }
+            while (!Converged(current, previous, eps));
 
             return current;
         }
-
-        private void SetClientData(int clientsCount, int iteration, int size, float[] matrixRow, float[] previous)
+        private bool Converged(float[] prevX, float[] currX, float eps)
         {
-            _clientData = new List<ClientData>(clientsCount);
-            int step = size / clientsCount;
+            float norm = 0f;
+            for (int i = 0; i < prevX.Length; i++)
+            {
+                norm += (currX[i] - prevX[i]) * (currX[i] - prevX[i]);
+            }
+            return Math.Sqrt(norm) < eps;
+        }
+        private void SetClientData(int iteration, int size, float[] matrixRow, float[] previous)
+        {
+            int step = size / _clientCount;
             int startIter;
             int endIter;
-            for (int i = 0; i < clientsCount; i++)
+            for (int i = 0; i < _clientCount; i++)
             {
                 startIter = step * i;
                 endIter = startIter + step;
-                _clientData.Add(new ClientData()
-                {
-                    MatrixRow = matrixRow,
-                    Previous = previous,
-                    Iteration = iteration,
-                    StartIter = startIter,
-                    EndIter = endIter
-                });
+                var data = _clientData[i];
+                data.MatrixRow = matrixRow;
+                data.Previous = previous;
+                data.Iteration = iteration;
+                data.StartIter = startIter;
+                data.EndIter = endIter;
             }
         }
         private float SendDataToClient(int key, ClientData data)
@@ -147,8 +161,13 @@ namespace Server
 
                 while (!reader.EndOfStream)
                 {
-                    var elements = reader.ReadLine().Split(' ').Select(float.Parse).ToArray();
-                    matrix.Add(elements);
+                    var elements = reader.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    matrix.Add(new float[elements.Length]);
+
+                    for (int i = 0; i < elements.Length; i++)
+                    {
+                        matrix[matrix.Count - 1][i] = Convert.ToSingle(elements[i]);
+                    }
                 }
 
                 return matrix;
@@ -156,17 +175,17 @@ namespace Server
         }
         private float[] ReadVector(string filename)
         {
-            var elements = File.ReadAllLines(filename);
-            var vector = new float[elements.Length];
-
-            for (int i = 0; i < elements.Length; i++)
+            using (var reader = new StreamReader(filename))
             {
-                vector[i] = Convert.ToSingle(elements[i]);
+                var elements = reader.ReadToEnd().Split(new char[] { '\n', '\r', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var vector = new float[elements.Length];
+
+                for (int i = 0; i < elements.Length; i++)
+                    vector[i] = Convert.ToSingle(elements[i]);
+
+                return vector;
             }
-
-            return vector;
         }
-
         public void Dispose()
         {
             if (!_isDisposed)

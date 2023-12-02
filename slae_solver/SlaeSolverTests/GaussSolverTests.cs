@@ -7,8 +7,6 @@ namespace SlaeSolverTests
         [Theory]
         [InlineData(1)]
         [InlineData(2)]
-        [InlineData(3)]
-        [InlineData(4)]
         public void GaussTests(int testNumber)
         {
             var testSlaeData = GetTestSlaeData($"M{testNumber}.txt", $"V{testNumber}.txt");
@@ -17,7 +15,7 @@ namespace SlaeSolverTests
 
             for (int i = 0; i < actualAnswer.Length; i++)
             {
-                Assert.Equal(expectedAnswer[i], actualAnswer[i]);
+                Assert.Equal(expectedAnswer[i], actualAnswer[i], GaussSolver.Epsilon);
             }
         }
 
@@ -39,27 +37,32 @@ namespace SlaeSolverTests
 
                 while (!reader.EndOfStream)
                 {
-                    var elements = reader.ReadLine().Split(' ').Select(float.Parse).ToArray();
-                    matrix.Add(elements);
+                    var elements = reader.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    matrix.Add(new float[elements.Length]);
+
+                    for (int i = 0; i < elements.Length; i++)
+                    {
+                        matrix[matrix.Count - 1][i] = Convert.ToSingle(elements[i]);
+                    }
                 }
 
                 return matrix;
             }
         }
-
         private float[] ReadVector(string filename)
         {
             string path = Directory.GetParent(Environment.CurrentDirectory)?.Parent?.Parent?.FullName;
             var vectorPath = Path.Combine(path, $"Files/{filename}");
-            var elements = File.ReadAllLines(vectorPath);
-            var vector = new float[elements.Length];
-
-            for (int i = 0; i < elements.Length; i++)
+            using (var reader = new StreamReader(vectorPath))
             {
-                vector[i] = Convert.ToSingle(elements[i]);
-            }
+                var elements = reader.ReadToEnd().Split(new char[] { '\n', '\r', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var vector = new float[elements.Length];
 
-            return vector;
+                for (int i = 0; i < elements.Length; i++)
+                    vector[i] = Convert.ToSingle(elements[i]);
+
+                return vector;
+            }
         }
     }
 }

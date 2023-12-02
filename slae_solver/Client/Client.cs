@@ -9,25 +9,45 @@ namespace Client
     {
         private readonly TcpClient _client;
         private bool _isDisposed;
-        private static NetworkStream _stream;
+        private NetworkStream _stream;
 
         public Client()
         {
             var settings = new ClientSettings();
             _client = new TcpClient(settings.HostName, settings.Port);
+            Console.WriteLine($"Connected to host {settings.HostName}:{settings.Port}");
             _stream = _client.GetStream();
         }
 
         public ClientData GetDataFromServer()
         {
-            byte[] buffer = new byte[256];
-
-            do
+            if (_stream.CanRead)
             {
-                int read = _stream.Read(buffer, 0, buffer.Length);
-            } while (_stream.DataAvailable);
-            string data = Encoding.UTF8.GetString(buffer);
-            return JsonConvert.DeserializeObject<ClientData>(data);
+                byte[] buffer = new byte[1024];
+                StringBuilder data = new StringBuilder();
+                int bytesRead = 0;
+
+                do
+                {
+                    bytesRead = _stream.Read(buffer, 0, buffer.Length);
+                    data.AppendFormat("{0}", Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                }
+                while (_stream.DataAvailable);
+                var message = data.ToString();
+                return JsonConvert.DeserializeObject<ClientData>(message);
+            }
+            else
+            {
+                throw new InvalidOperationException("Cannot read from this NetworkStream.");
+            }
+            //byte[] buffer = new byte[256];
+
+            //do
+            //{
+            //    int read = _stream.Read(buffer, 0, buffer.Length);
+            //} while (_stream.DataAvailable);
+            //string data = Encoding.UTF8.GetString(buffer);
+            //return JsonConvert.DeserializeObject<ClientData>(data);
         }
         public void SendMessage(string message)
         {
