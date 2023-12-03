@@ -1,7 +1,6 @@
 ﻿using Domain;
 using Newtonsoft.Json;
 using System.Net.Sockets;
-using System.Text;
 
 namespace Client
 {
@@ -21,39 +20,26 @@ namespace Client
 
         public ClientData GetDataFromServer()
         {
-            if (_stream.CanRead)
-            {
-                byte[] buffer = new byte[1024];
-                StringBuilder data = new StringBuilder();
-                int bytesRead = 0;
 
-                do
-                {
-                    bytesRead = _stream.Read(buffer, 0, buffer.Length);
-                    data.AppendFormat("{0}", Encoding.UTF8.GetString(buffer, 0, bytesRead));
-                }
-                while (_stream.DataAvailable);
-                var message = data.ToString();
-                return JsonConvert.DeserializeObject<ClientData>(message);
-            }
-            else
+            float[] matrixRow = DataManipulation.GetArray(_stream);
+            float[] previous = DataManipulation.GetArray(_stream);
+            int iteration = int.Parse(DataManipulation.GetMessage(_stream));
+            int startIter = int.Parse(DataManipulation.GetMessage(_stream));
+            int endIter = int.Parse(DataManipulation.GetMessage(_stream));
+            bool isSlaeSolved = bool.Parse(DataManipulation.GetMessage(_stream));
+            return new ClientData
             {
-                throw new InvalidOperationException("Cannot read from this NetworkStream.");
-            }
-            //byte[] buffer = new byte[256];
-
-            //do
-            //{
-            //    int read = _stream.Read(buffer, 0, buffer.Length);
-            //} while (_stream.DataAvailable);
-            //string data = Encoding.UTF8.GetString(buffer);
-            //return JsonConvert.DeserializeObject<ClientData>(data);
+                MatrixRow = matrixRow,
+                Previous = previous,
+                Iteration = iteration,
+                StartIter = startIter,
+                EndIter = endIter,
+                IsSlaeSolved = isSlaeSolved
+            };
         }
         public void SendMessage(string message)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(message);
-            _stream.Write(bytes, 0, bytes.Length);
-            _stream.Flush();
+            DataManipulation.SendMessage(_stream, message);
         }
         public float JacobiHandle(ClientData data)
         {

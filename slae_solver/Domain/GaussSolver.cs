@@ -33,7 +33,7 @@
 
                     current[i] = (vector[i] - sum) / matrix[i][i];
                     norm += (current[i] - previous[i]) * (current[i] - previous[i]);
-                    
+
                 });
                 converge = Math.Sqrt(norm) < Epsilon;
             }

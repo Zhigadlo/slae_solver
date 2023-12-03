@@ -1,7 +1,6 @@
 ﻿using Domain;
 using Newtonsoft.Json;
 using System.Net.Sockets;
-using System.Text;
 
 namespace Server
 {
@@ -23,6 +22,7 @@ namespace Server
 
             Console.WriteLine("Enter number of clinets: ");
             _clientCount = int.Parse(Console.ReadLine());
+            //_clientCount = 1;
 
             _clientData = new List<ClientData>(_clientCount);
             for (int i = 0; i < _clientCount; i++)
@@ -48,7 +48,6 @@ namespace Server
                 var stream = _clients[i].GetStream();
                 _clientStreams.Add(i, stream);
             }
-            
 
             var matrixPath = Path.Combine(_settings.DataPath, _settings.MatrixFilename);
             var vectorPath = Path.Combine(_settings.DataPath, _settings.VectorFilename);
@@ -63,29 +62,25 @@ namespace Server
 
             //отправка сообщений клиентам о решении СЛАУ
             var slaeSolvedData = new ClientData { IsSlaeSolved = true };
-            foreach (var stream in _clientStreams.Values)
+            Parallel.For(0, _clientCount, i =>
             {
-                SendMessage(stream, JsonConvert.SerializeObject(slaeSolvedData));
-            }
+                _clientData[i] = slaeSolvedData;
+                SendDataToClient(i);
+            });
         }
-        private static string GetRequestData(NetworkStream stream)
-        {
-            byte[] buffer = new byte[256];
-            List<byte> bytes = new List<byte>();
+        //private static string GetRequestData(NetworkStream stream)
+        //{
+        //    byte[] buffer = new byte[256];
+        //    List<byte> bytes = new List<byte>();
 
-            do
-            {
-                int read = stream.Read(buffer, 0, buffer.Length);
-                bytes.AddRange(buffer.Take(read));
-            } while (stream.DataAvailable);
+        //    do
+        //    {
+        //        int read = stream.Read(buffer, 0, buffer.Length);
+        //        bytes.AddRange(buffer.Take(read));
+        //    } while (stream.DataAvailable);
 
-            return Encoding.UTF8.GetString(bytes.ToArray());
-        }
-        private static void SendMessage(NetworkStream stream, string message)
-        {
-            var buffer = Encoding.UTF8.GetBytes(message);
-            stream.Write(buffer, 0, buffer.Length);
-        }
+        //    return Encoding.UTF8.GetString(bytes.ToArray());
+        //}
 
         private float[] Solve(List<float[]> matrix, float[] vector, float eps = 0.00001f)
         {
@@ -105,11 +100,13 @@ namespace Server
                 for (int i = 0; i < size; i++)
                 {
                     float sum = 0f;
+
                     SetClientData(i, size, matrix[i], previous);
+                    Parallel.For(0, _clientCount, SendDataToClient);
 
                     Parallel.For(0, _clientCount, k =>
                     {
-                        sum += SendDataToClient(k, _clientData[k]);
+                        sum += GetSumFromClient(k);
                     });
 
                     current[i] = (vector[i] - sum) / matrix[i][i];
@@ -145,14 +142,32 @@ namespace Server
                 data.EndIter = endIter;
             }
         }
-        private float SendDataToClient(int key, ClientData data)
+        private void SendDataToClient(int key)
         {
             var stream = _clientStreams[key];
-            var jsonData = JsonConvert.SerializeObject(data);
-            SendMessage(stream, jsonData);
-            string response = GetRequestData(stream);
-            return float.Parse(response);
+            var data = _clientData[key];
+            DataManipulation.SendArray(stream, data.MatrixRow);
+            DataManipulation.SendArray(stream, data.Previous);
+            DataManipulation.SendMessage(stream, data.Iteration.ToString());
+            DataManipulation.SendMessage(stream, data.StartIter.ToString());
+            DataManipulation.SendMessage(stream, data.EndIter.ToString());
+            DataManipulation.SendMessage(stream, data.IsSlaeSolved.ToString());
         }
+        private float GetSumFromClient(int key)
+        {
+            var stream = _clientStreams[key];
+            string message = DataManipulation.GetMessage(stream);
+            return float.Parse(message);
+        }
+
+        //private float SendDataToClient(int key, ClientData data)
+        //{
+        //    var stream = _clientStreams[key];
+        //    var jsonData = JsonConvert.SerializeObject(data);
+        //    DataManipulation.SendMessage(stream, jsonData);
+        //    string response = GetRequestData(stream);
+        //    return float.Parse(response);
+        //}
         private List<float[]> ReadMatrix(string filename)
         {
             using (var reader = new StreamReader(filename))
