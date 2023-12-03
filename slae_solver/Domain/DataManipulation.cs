@@ -7,9 +7,9 @@ namespace Domain
     {
         public static string GetMessage(NetworkStream stream)
         {
-            byte[] lengthBuffer = new byte[4];
             if (stream.CanRead)
             {
+                byte[] lengthBuffer = new byte[4];
                 int bytesRead = stream.Read(lengthBuffer, 0, lengthBuffer.Length);
                 int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
                 if (bytesRead < 4)

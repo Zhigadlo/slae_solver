@@ -23,7 +23,7 @@ namespace Server
             Console.WriteLine("Enter number of clinets: ");
             _clientCount = int.Parse(Console.ReadLine());
             //_clientCount = 1;
-
+            //
             _clientData = new List<ClientData>(_clientCount);
             for (int i = 0; i < _clientCount; i++)
                 _clientData.Add(new ClientData());
@@ -68,19 +68,6 @@ namespace Server
                 SendDataToClient(i);
             });
         }
-        //private static string GetRequestData(NetworkStream stream)
-        //{
-        //    byte[] buffer = new byte[256];
-        //    List<byte> bytes = new List<byte>();
-
-        //    do
-        //    {
-        //        int read = stream.Read(buffer, 0, buffer.Length);
-        //        bytes.AddRange(buffer.Take(read));
-        //    } while (stream.DataAvailable);
-
-        //    return Encoding.UTF8.GetString(bytes.ToArray());
-        //}
 
         private float[] Solve(List<float[]> matrix, float[] vector, float eps = 0.00001f)
         {
@@ -146,12 +133,13 @@ namespace Server
         {
             var stream = _clientStreams[key];
             var data = _clientData[key];
-            DataManipulation.SendArray(stream, data.MatrixRow);
-            DataManipulation.SendArray(stream, data.Previous);
-            DataManipulation.SendMessage(stream, data.Iteration.ToString());
-            DataManipulation.SendMessage(stream, data.StartIter.ToString());
-            DataManipulation.SendMessage(stream, data.EndIter.ToString());
-            DataManipulation.SendMessage(stream, data.IsSlaeSolved.ToString());
+            DataManipulation.SendMessage(stream, JsonConvert.SerializeObject(data));
+            //DataManipulation.SendArray(stream, data.MatrixRow);
+            //DataManipulation.SendArray(stream, data.Previous);
+            //DataManipulation.SendMessage(stream, data.Iteration.ToString());
+            //DataManipulation.SendMessage(stream, data.StartIter.ToString());
+            //DataManipulation.SendMessage(stream, data.EndIter.ToString());
+            //DataManipulation.SendMessage(stream, data.IsSlaeSolved.ToString());
         }
         private float GetSumFromClient(int key)
         {
