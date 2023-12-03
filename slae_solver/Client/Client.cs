@@ -15,7 +15,7 @@ namespace Client
         {
             var settings = new ClientSettings();
             _client = new TcpClient(settings.HostName, settings.Port);
-            Console.WriteLine($"Connected to host {settings.HostName}:{settings.Port}");
+            Console.WriteLine($"Connected to host {_client.Client.RemoteEndPoint}");
             _stream = _client.GetStream();
         }
 

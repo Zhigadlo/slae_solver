@@ -22,7 +22,7 @@ namespace Server
             _clientStreams = new Dictionary<int, NetworkStream>();
 
             Console.WriteLine("Enter number of clinets: ");
-            int _clientCount = int.Parse(Console.ReadLine());
+            _clientCount = int.Parse(Console.ReadLine());
 
             _clientData = new List<ClientData>(_clientCount);
             for (int i = 0; i < _clientCount; i++)

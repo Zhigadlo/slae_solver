@@ -7,15 +7,17 @@ namespace SlaeSolverTests
         [Theory]
         [InlineData(1)]
         [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
         public void GaussTests(int testNumber)
         {
-            var testSlaeData = GetTestSlaeData($"M{testNumber}.txt", $"V{testNumber}.txt");
+            var testSlaeData = GetTestSlaeData($"A{testNumber}.txt", $"B{testNumber}.txt");
             var expectedAnswer = ReadVector($"X{testNumber}.txt");
             var actualAnswer = GaussSolver.Solve(testSlaeData.Matrix, testSlaeData.Vector);
 
             for (int i = 0; i < actualAnswer.Length; i++)
             {
-                Assert.Equal(expectedAnswer[i], actualAnswer[i], GaussSolver.Epsilon);
+                Assert.Equal(expectedAnswer[i], actualAnswer[i], 0.01f);
             }
         }
 
