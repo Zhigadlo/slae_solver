@@ -1,7 +1,7 @@
 ﻿using (Client.Client client = new Client.Client())
 {
-    try
-    {
+    //try
+    //{
         bool isSlaeSolved = false;
         while (!isSlaeSolved)
         {
@@ -18,12 +18,12 @@
         }
 
         Console.WriteLine("SLAE solved:)");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine(ex.Message);
-        Console.ResetColor();
-    }
+    //}
+    //catch (Exception ex)
+    //{
+    //    Console.WriteLine(ex.Message);
+    //    Console.ResetColor();
+    //}
 }
 
 Console.WriteLine("\nPress Enter to close the programm...");

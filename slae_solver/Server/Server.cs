@@ -23,7 +23,7 @@ namespace Server
             Console.WriteLine("Enter number of clinets: ");
             _clientCount = int.Parse(Console.ReadLine());
             //_clientCount = 1;
-            //
+          
             _clientData = new List<ClientData>(_clientCount);
             for (int i = 0; i < _clientCount; i++)
                 _clientData.Add(new ClientData());
