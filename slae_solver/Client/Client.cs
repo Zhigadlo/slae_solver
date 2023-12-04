@@ -21,21 +21,6 @@ namespace Client
         public ClientData GetDataFromServer()
         {
             string jsonData = DataManipulation.GetMessage(_stream);
-            //float[] matrixRow = DataManipulation.GetArray(_stream);
-            //float[] previous = DataManipulation.GetArray(_stream);
-            //int iteration = int.Parse(DataManipulation.GetMessage(_stream));
-            //int startIter = int.Parse(DataManipulation.GetMessage(_stream));
-            //int endIter = int.Parse(DataManipulation.GetMessage(_stream));
-            //bool isSlaeSolved = bool.Parse(DataManipulation.GetMessage(_stream));
-            //return new ClientData
-            //{
-            //    MatrixRow = matrixRow,
-            //    Previous = previous,
-            //    Iteration = iteration,
-            //    StartIter = startIter,
-            //    EndIter = endIter,
-            //    IsSlaeSolved = isSlaeSolved
-            //};
             return JsonConvert.DeserializeObject<ClientData>(jsonData);
         }
         public void SendMessage(string message)

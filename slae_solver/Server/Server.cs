@@ -22,8 +22,7 @@ namespace Server
 
             Console.WriteLine("Enter number of clinets: ");
             _clientCount = int.Parse(Console.ReadLine());
-            //_clientCount = 1;
-          
+
             _clientData = new List<ClientData>(_clientCount);
             for (int i = 0; i < _clientCount; i++)
                 _clientData.Add(new ClientData());
@@ -134,12 +133,6 @@ namespace Server
             var stream = _clientStreams[key];
             var data = _clientData[key];
             DataManipulation.SendMessage(stream, JsonConvert.SerializeObject(data));
-            //DataManipulation.SendArray(stream, data.MatrixRow);
-            //DataManipulation.SendArray(stream, data.Previous);
-            //DataManipulation.SendMessage(stream, data.Iteration.ToString());
-            //DataManipulation.SendMessage(stream, data.StartIter.ToString());
-            //DataManipulation.SendMessage(stream, data.EndIter.ToString());
-            //DataManipulation.SendMessage(stream, data.IsSlaeSolved.ToString());
         }
         private float GetSumFromClient(int key)
         {
@@ -148,14 +141,6 @@ namespace Server
             return float.Parse(message);
         }
 
-        //private float SendDataToClient(int key, ClientData data)
-        //{
-        //    var stream = _clientStreams[key];
-        //    var jsonData = JsonConvert.SerializeObject(data);
-        //    DataManipulation.SendMessage(stream, jsonData);
-        //    string response = GetRequestData(stream);
-        //    return float.Parse(response);
-        //}
         private List<float[]> ReadMatrix(string filename)
         {
             using (var reader = new StreamReader(filename))
