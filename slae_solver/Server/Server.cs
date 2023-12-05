@@ -1,5 +1,7 @@
 ﻿using Domain;
 using Newtonsoft.Json;
+using System.Diagnostics;
+using System.IO;
 using System.Net.Sockets;
 
 namespace Server
@@ -48,17 +50,27 @@ namespace Server
                 _clientStreams.Add(i, stream);
             }
 
+            Console.WriteLine("Reading SLAE from file...");
+
             var matrixPath = Path.Combine(_settings.DataPath, _settings.MatrixFilename);
             var vectorPath = Path.Combine(_settings.DataPath, _settings.VectorFilename);
             var matrix = ReadMatrix(matrixPath);
             var vector = ReadVector(vectorPath);
 
+            Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");
+
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+
             float[] x = Solve(matrix, vector, _clientCount);
+
+            watch.Stop();
 
             Console.WriteLine("SLAE solution:");
             for (i = 0; i < x.Length; i++)
                 Console.WriteLine(x[i]);
-
+            Console.WriteLine($"Execution time: {watch.ElapsedMilliseconds} ms");
+            WriteAnswer(x);
             //отправка сообщений клиентам о решении СЛАУ
             var slaeSolvedData = new ClientData { IsSlaeSolved = true };
             Parallel.For(0, _clientCount, i =>
@@ -139,6 +151,27 @@ namespace Server
             var stream = _clientStreams[key];
             string message = DataManipulation.GetMessage(stream);
             return float.Parse(message);
+        }
+
+        private void WriteAnswer(float[] answer)
+        {
+            try
+            {
+                // Если файл существует, он будет перезаписан
+                using (StreamWriter sw = new StreamWriter(_settings.AnswerPath))
+                {
+                    foreach (float x in answer)
+                    {
+                        sw.WriteLine(x);
+                    }
+                }
+
+                Console.WriteLine($"Answer was written to {_settings.AnswerPath} successfully");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: " + e.Message);
+            }
         }
 
         private List<float[]> ReadMatrix(string filename)

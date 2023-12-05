@@ -9,6 +9,7 @@ namespace Server
         private static IPAddress? _ip = null;
         private static int _port = -1;
         private static string? _dataPath = null;
+        private static string? _answerPath = null;
         private static string? _matrixFilename = null;
         private static string? _vectorFilename = null;
 
@@ -42,6 +43,16 @@ namespace Server
                 return _config;
             }
         }
+        public string AnswerPath
+        {
+            get
+            {
+                if (_answerPath == null)
+                    _answerPath = GetAnswerPath();
+
+                return _answerPath;
+            }
+        }
         public string DataPath
         {
             get
@@ -73,6 +84,7 @@ namespace Server
             }
         }
 
+        private string GetAnswerPath() => Configuration.GetSection("NetworkSettings").GetSection("answerPath").Value;
         private string GetDataPath() => Configuration.GetSection("NetworkSettings").GetSection("dataPath").Value;
         private string GetVectorFilename() => Configuration.GetSection("NetworkSettings").GetSection("files").GetSection("vector").Value;
         private string GetMatrixFilename() => Configuration.GetSection("NetworkSettings").GetSection("files").GetSection("matrix").Value;

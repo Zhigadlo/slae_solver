@@ -3,6 +3,7 @@
     "IP": "192.168.0.130",
     "port": "8888",
     "dataPath": "C:\\Projects\\slae_solver\\slae_solver\\SlaeSolverTests\\Files\\",
+    "answerPath": "C:\\Users\\Яга Привет\\Desktop\\X.txt",
     "files": {
       "matrix": "A1.txt",
       "vector": "B1.txt"
