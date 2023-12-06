@@ -2,32 +2,30 @@
 using Newtonsoft.Json;
 using System.Net.Sockets;
 
-namespace Client
+namespace NodeServer
 {
     public class NodeServer : IDisposable
     {
-        private readonly TcpClient _client;
+        private readonly TcpClient _nodeServer;
         private bool _isDisposed;
         private NetworkStream _stream;
 
         public NodeServer()
         {
             var settings = new NodeServerSettings();
-            _client = new TcpClient(settings.HostName, settings.Port);
-            Console.WriteLine($"Connected to host {_client.Client.RemoteEndPoint}");
-            _stream = _client.GetStream();
+            _nodeServer = new TcpClient(settings.HostName, settings.Port);
+            Console.WriteLine($"Connected to host {_nodeServer.Client.RemoteEndPoint}");
+            _stream = _nodeServer.GetStream();
         }
 
-        public ClientData GetDataFromServer()
+        public NodeServerData GetDataFromServer()
         {
             string jsonData = DataManipulation.GetMessage(_stream);
-            return JsonConvert.DeserializeObject<ClientData>(jsonData);
+            return JsonConvert.DeserializeObject<NodeServerData>(jsonData);
         }
-        public void SendMessage(string message)
-        {
-            DataManipulation.SendMessage(_stream, message);
-        }
-        public float JacobiHandle(ClientData data)
+        public void SendMessage(string message) => DataManipulation.SendMessage(_stream, message);
+
+        public float JacobiHandle(NodeServerData data)
         {
             float sum = 0f;
 
@@ -46,7 +44,7 @@ namespace Client
             if (!_isDisposed)
             {
                 _stream.Close();
-                _client.Close();
+                _nodeServer.Close();
                 _isDisposed = true;
                 GC.SuppressFinalize(this);
             }

@@ -1,7 +1,7 @@
 ﻿using Domain;
 using Newtonsoft.Json;
+using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Sockets;
 
 namespace Server
@@ -11,9 +11,12 @@ namespace Server
         private readonly TcpListener _tcpListener;
         private bool _isDisposed = false;
         private ServerSettings _settings;
+
         private List<TcpClient> _servers;
-        private List<ClientData> _serversData;
+        private List<NodeServerData> _serversData;
+        private ConcurrentQueue<TcpClient> _clients;
         private Dictionary<int, NetworkStream> _serverStreams;
+
         private int _serversCount;
         public Server()
         {
@@ -21,63 +24,100 @@ namespace Server
             _tcpListener = new TcpListener(_settings.Ip, _settings.Port);
             _servers = new List<TcpClient>();
             _serverStreams = new Dictionary<int, NetworkStream>();
+            _clients = new ConcurrentQueue<TcpClient>();
 
             Console.WriteLine("Enter number of node servers: ");
             _serversCount = int.Parse(Console.ReadLine());
 
-            _serversData = new List<ClientData>(_serversCount);
+            _serversData = new List<NodeServerData>(_serversCount);
             for (int i = 0; i < _serversCount; i++)
-                _serversData.Add(new ClientData());
+                _serversData.Add(new NodeServerData());
         }
 
         public void Start()
         {
             _tcpListener.Start();
-            Console.WriteLine("Waiting for client connections...");
+            Console.WriteLine("Waiting for server connections...");
             int i = 0;
             while (i < _serversCount)
             {
-                var client = _tcpListener.AcceptTcpClient();
-                _servers.Add(client);
-                Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
+                var nodeServer = _tcpListener.AcceptTcpClient();
+                _servers.Add(nodeServer);
+                var serverStream = nodeServer.GetStream();
+                _serverStreams.Add(i, serverStream);
+                Console.WriteLine($"Node server {nodeServer.Client.RemoteEndPoint} connected");
                 i++;
             }
 
-            //открываем потоки для чтения и отправки данных клиентам
-            for (i = 0; i < _serversCount; i++)
+            Console.WriteLine("All node servers connected and ready to work:)");
+
+            //поток для принятия клиентов
+            //Thread clientConnnectionThread = new Thread(new ThreadStart(ConnectionReceiving));
+            //Thread clientHandlingThread = new Thread(new ThreadStart(ClientHandling));
+
+            //clientConnnectionThread.Start();
+            //clientHandlingThread.Start();
+
+            //clientConnnectionThread.Join();
+            //clientHandlingThread.Join();
+
+            while (true)
             {
-                var stream = _servers[i].GetStream();
-                _serverStreams.Add(i, stream);
+                ConnectionReceiving();
+                ClientHandling();
             }
 
-            Console.WriteLine("Reading SLAE from file...");
-
-            var matrixPath = Path.Combine(_settings.DataPath, _settings.MatrixFilename);
-            var vectorPath = Path.Combine(_settings.DataPath, _settings.VectorFilename);
-            var matrix = ReadMatrix(matrixPath);
-            var vector = ReadVector(vectorPath);
-
-            Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");
-
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-
-            float[] x = Solve(matrix, vector, _serversCount);
-
-            watch.Stop();
-
-            Console.WriteLine("SLAE solution:");
-            for (i = 0; i < x.Length; i++)
-                Console.WriteLine(x[i]);
-            Console.WriteLine($"Execution time: {watch.ElapsedMilliseconds} ms");
-            WriteAnswer(x);
-            //отправка сообщений клиентам о решении СЛАУ
-            var slaeSolvedData = new ClientData { IsSlaeSolved = true };
-            Parallel.For(0, _serversCount, i =>
+            //Task.Run(ConnectionReceiving);
+            //Task.Run(ClientHandling);
+            
+        }
+        private void ConnectionReceiving()
+        {
+            Console.WriteLine("Waiting for client connections...");
+            while (true)
             {
-                _serversData[i] = slaeSolvedData;
-                SendDataToClient(i);
-            });
+                TcpClient client = _tcpListener.AcceptTcpClient();
+                _clients.Enqueue(client);
+                Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
+            }
+        }
+
+        private void ClientHandling()
+        {
+            while (true)
+            {
+                if (_clients.TryDequeue(out var client))
+                {
+                    var clientStream = client.GetStream();
+                    DataManipulation.SendMessage(clientStream, "Server started handling your request");
+
+                    //получение СЛАУ от клиента
+                    int matrixSize = JsonConvert.DeserializeObject<int>(DataManipulation.GetMessage(clientStream));
+                    List<float[]> matrix = new List<float[]>(matrixSize);
+                    for (int i = 0; i < matrixSize; i++)
+                    {
+                        float[] matrixRow = JsonConvert.DeserializeObject<float[]>(DataManipulation.GetMessage(clientStream));
+                        matrix.Add(matrixRow);
+                    }
+                    float[] vector = JsonConvert.DeserializeObject<float[]>(DataManipulation.GetMessage(clientStream));
+
+                    Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");
+
+                    Stopwatch watch = new Stopwatch();
+                    watch.Start();
+
+                    float[] x = Solve(matrix, vector, _serversCount);
+
+                    watch.Stop();
+
+                    DataManipulation.SendMessage(clientStream, JsonConvert.SerializeObject(x));
+
+                    Console.WriteLine($"SLAE solved for client {client.Client.RemoteEndPoint}");
+                    long executionTime = watch.ElapsedMilliseconds;
+                    Console.WriteLine($"Execution time: {executionTime} ms");
+                    DataManipulation.SendMessage(clientStream, executionTime.ToString());
+                }
+            }
         }
 
         private float[] Solve(List<float[]> matrix, float[] vector, float eps = 0.00001f)
@@ -99,7 +139,7 @@ namespace Server
                 {
                     float sum = 0f;
 
-                    SetClientData(i, size, matrix[i], previous);
+                    SetNodeServerData(i, size, matrix[i], previous);
                     Parallel.For(0, _serversCount, SendDataToClient);
 
                     Parallel.For(0, _serversCount, k =>
@@ -123,7 +163,7 @@ namespace Server
             }
             return Math.Sqrt(norm) < eps;
         }
-        private void SetClientData(int iteration, int size, float[] matrixRow, float[] previous)
+        private void SetNodeServerData(int iteration, int size, float[] matrixRow, float[] previous)
         {
             int step = size / _serversCount;
             int startIter;
@@ -153,60 +193,6 @@ namespace Server
             return float.Parse(message);
         }
 
-        private void WriteAnswer(float[] answer)
-        {
-            try
-            {
-                // Если файл существует, он будет перезаписан
-                using (StreamWriter sw = new StreamWriter(_settings.AnswerPath))
-                {
-                    foreach (float x in answer)
-                    {
-                        sw.WriteLine(x);
-                    }
-                }
-
-                Console.WriteLine($"Answer was written to {_settings.AnswerPath} successfully");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception: " + e.Message);
-            }
-        }
-
-        private List<float[]> ReadMatrix(string filename)
-        {
-            using (var reader = new StreamReader(filename))
-            {
-                var matrix = new List<float[]>();
-
-                while (!reader.EndOfStream)
-                {
-                    var elements = reader.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    matrix.Add(new float[elements.Length]);
-
-                    for (int i = 0; i < elements.Length; i++)
-                    {
-                        matrix[matrix.Count - 1][i] = Convert.ToSingle(elements[i]);
-                    }
-                }
-
-                return matrix;
-            }
-        }
-        private float[] ReadVector(string filename)
-        {
-            using (var reader = new StreamReader(filename))
-            {
-                var elements = reader.ReadToEnd().Split(new char[] { '\n', '\r', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                var vector = new float[elements.Length];
-
-                for (int i = 0; i < elements.Length; i++)
-                    vector[i] = Convert.ToSingle(elements[i]);
-
-                return vector;
-            }
-        }
         public void Dispose()
         {
             if (!_isDisposed)

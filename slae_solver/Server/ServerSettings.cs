@@ -8,10 +8,6 @@ namespace Server
         private static IConfiguration? _config = null;
         private static IPAddress? _ip = null;
         private static int _port = -1;
-        private static string? _dataPath = null;
-        private static string? _answerPath = null;
-        private static string? _matrixFilename = null;
-        private static string? _vectorFilename = null;
 
         public IPAddress Ip
         {
@@ -43,51 +39,7 @@ namespace Server
                 return _config;
             }
         }
-        public string AnswerPath
-        {
-            get
-            {
-                if (_answerPath == null)
-                    _answerPath = GetAnswerPath();
 
-                return _answerPath;
-            }
-        }
-        public string DataPath
-        {
-            get
-            {
-                if (_dataPath == null)
-                    _dataPath = GetDataPath();
-
-                return _dataPath;
-            }
-        }
-        public string MatrixFilename
-        {
-            get
-            {
-                if (_matrixFilename == null)
-                    _matrixFilename = GetMatrixFilename();
-
-                return _matrixFilename;
-            }
-        }
-        public string VectorFilename
-        {
-            get
-            {
-                if (_vectorFilename == null)
-                    _vectorFilename = GetVectorFilename();
-
-                return _vectorFilename;
-            }
-        }
-
-        private string GetAnswerPath() => Configuration.GetSection("NetworkSettings").GetSection("answerPath").Value;
-        private string GetDataPath() => Configuration.GetSection("NetworkSettings").GetSection("dataPath").Value;
-        private string GetVectorFilename() => Configuration.GetSection("NetworkSettings").GetSection("files").GetSection("vector").Value;
-        private string GetMatrixFilename() => Configuration.GetSection("NetworkSettings").GetSection("files").GetSection("matrix").Value;
         private IPAddress GetIp() => IPAddress.Parse(Configuration.GetSection("NetworkSettings").GetSection("IP").Value);
         private int GetPort() => int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
         private IConfiguration GetConfiguration()

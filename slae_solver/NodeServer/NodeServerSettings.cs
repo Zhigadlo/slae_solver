@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace Client
+namespace NodeServer
 {
     public class NodeServerSettings
     {
