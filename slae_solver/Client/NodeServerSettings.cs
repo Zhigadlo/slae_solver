@@ -2,7 +2,7 @@
 
 namespace Client
 {
-    public class ClientSettings
+    public class NodeServerSettings
     {
         private static IConfiguration? _config = null;
         private static string? _hostname = null;

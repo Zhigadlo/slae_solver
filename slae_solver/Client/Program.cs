@@ -1,4 +1,4 @@
-﻿using (Client.Client client = new Client.Client())
+﻿using (Client.NodeServer client = new Client.NodeServer())
 {
     try
     {

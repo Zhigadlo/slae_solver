@@ -4,15 +4,15 @@ using System.Net.Sockets;
 
 namespace Client
 {
-    public class Client : IDisposable
+    public class NodeServer : IDisposable
     {
         private readonly TcpClient _client;
         private bool _isDisposed;
         private NetworkStream _stream;
 
-        public Client()
+        public NodeServer()
         {
-            var settings = new ClientSettings();
+            var settings = new NodeServerSettings();
             _client = new TcpClient(settings.HostName, settings.Port);
             Console.WriteLine($"Connected to host {_client.Client.RemoteEndPoint}");
             _stream = _client.GetStream();

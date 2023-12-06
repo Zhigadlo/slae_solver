@@ -11,23 +11,23 @@ namespace Server
         private readonly TcpListener _tcpListener;
         private bool _isDisposed = false;
         private ServerSettings _settings;
-        private List<TcpClient> _clients;
-        private List<ClientData> _clientData;
-        private Dictionary<int, NetworkStream> _clientStreams;
-        private int _clientCount;
+        private List<TcpClient> _servers;
+        private List<ClientData> _serversData;
+        private Dictionary<int, NetworkStream> _serverStreams;
+        private int _serversCount;
         public Server()
         {
             _settings = new ServerSettings();
             _tcpListener = new TcpListener(_settings.Ip, _settings.Port);
-            _clients = new List<TcpClient>();
-            _clientStreams = new Dictionary<int, NetworkStream>();
+            _servers = new List<TcpClient>();
+            _serverStreams = new Dictionary<int, NetworkStream>();
 
-            Console.WriteLine("Enter number of clinets: ");
-            _clientCount = int.Parse(Console.ReadLine());
+            Console.WriteLine("Enter number of node servers: ");
+            _serversCount = int.Parse(Console.ReadLine());
 
-            _clientData = new List<ClientData>(_clientCount);
-            for (int i = 0; i < _clientCount; i++)
-                _clientData.Add(new ClientData());
+            _serversData = new List<ClientData>(_serversCount);
+            for (int i = 0; i < _serversCount; i++)
+                _serversData.Add(new ClientData());
         }
 
         public void Start()
@@ -35,19 +35,19 @@ namespace Server
             _tcpListener.Start();
             Console.WriteLine("Waiting for client connections...");
             int i = 0;
-            while (i < _clientCount)
+            while (i < _serversCount)
             {
                 var client = _tcpListener.AcceptTcpClient();
-                _clients.Add(client);
+                _servers.Add(client);
                 Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
                 i++;
             }
 
             //открываем потоки для чтения и отправки данных клиентам
-            for (i = 0; i < _clientCount; i++)
+            for (i = 0; i < _serversCount; i++)
             {
-                var stream = _clients[i].GetStream();
-                _clientStreams.Add(i, stream);
+                var stream = _servers[i].GetStream();
+                _serverStreams.Add(i, stream);
             }
 
             Console.WriteLine("Reading SLAE from file...");
@@ -62,7 +62,7 @@ namespace Server
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
-            float[] x = Solve(matrix, vector, _clientCount);
+            float[] x = Solve(matrix, vector, _serversCount);
 
             watch.Stop();
 
@@ -73,9 +73,9 @@ namespace Server
             WriteAnswer(x);
             //отправка сообщений клиентам о решении СЛАУ
             var slaeSolvedData = new ClientData { IsSlaeSolved = true };
-            Parallel.For(0, _clientCount, i =>
+            Parallel.For(0, _serversCount, i =>
             {
-                _clientData[i] = slaeSolvedData;
+                _serversData[i] = slaeSolvedData;
                 SendDataToClient(i);
             });
         }
@@ -100,9 +100,9 @@ namespace Server
                     float sum = 0f;
 
                     SetClientData(i, size, matrix[i], previous);
-                    Parallel.For(0, _clientCount, SendDataToClient);
+                    Parallel.For(0, _serversCount, SendDataToClient);
 
-                    Parallel.For(0, _clientCount, k =>
+                    Parallel.For(0, _serversCount, k =>
                     {
                         sum += GetSumFromClient(k);
                     });
@@ -125,14 +125,14 @@ namespace Server
         }
         private void SetClientData(int iteration, int size, float[] matrixRow, float[] previous)
         {
-            int step = size / _clientCount;
+            int step = size / _serversCount;
             int startIter;
             int endIter;
-            for (int i = 0; i < _clientCount; i++)
+            for (int i = 0; i < _serversCount; i++)
             {
                 startIter = step * i;
                 endIter = startIter + step;
-                var data = _clientData[i];
+                var data = _serversData[i];
                 data.MatrixRow = matrixRow;
                 data.Previous = previous;
                 data.Iteration = iteration;
@@ -142,13 +142,13 @@ namespace Server
         }
         private void SendDataToClient(int key)
         {
-            var stream = _clientStreams[key];
-            var data = _clientData[key];
+            var stream = _serverStreams[key];
+            var data = _serversData[key];
             DataManipulation.SendMessage(stream, JsonConvert.SerializeObject(data));
         }
         private float GetSumFromClient(int key)
         {
-            var stream = _clientStreams[key];
+            var stream = _serverStreams[key];
             string message = DataManipulation.GetMessage(stream);
             return float.Parse(message);
         }
@@ -213,10 +213,10 @@ namespace Server
             {
                 _tcpListener.Stop();
                 _isDisposed = true;
-                for (int i = 0; i < _clients.Count(); i++)
+                for (int i = 0; i < _servers.Count(); i++)
                 {
-                    _clientStreams[i].Close();
-                    _clients[i].Close();
+                    _serverStreams[i].Close();
+                    _servers[i].Close();
                 }
 
                 GC.SuppressFinalize(this);
