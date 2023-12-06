@@ -61,11 +61,46 @@ namespace Server
             //clientConnnectionThread.Join();
             //clientHandlingThread.Join();
 
-            while (true)
+            //while (true)
+            //{
+            //    ConnectionReceiving();
+            //    ClientHandling();
+            //}
+            TcpClient client = _tcpListener.AcceptTcpClient();
+            var clientStream = client.GetStream();
+            DataManipulation.SendMessage(clientStream, "Server started handling your request");
+
+            //получение СЛАУ от клиента
+            int matrixSize = JsonConvert.DeserializeObject<int>(DataManipulation.GetMessage(clientStream));
+            Console.WriteLine($"Matrix size: {matrixSize}");
+
+            List<float[]> matrix = new List<float[]>(matrixSize);
+
+            for (i = 0; i < matrixSize; i++)
             {
-                ConnectionReceiving();
-                ClientHandling();
+                var message = DataManipulation.GetMessage(clientStream);
+                //Console.WriteLine(message);
+                float[] matrixRow = JsonConvert.DeserializeObject<float[]>(message);
+                matrix.Add(matrixRow);
             }
+
+            float[] vector = JsonConvert.DeserializeObject<float[]>(DataManipulation.GetMessage(clientStream));
+
+            Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");
+
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+
+            float[] x = Solve(matrix, vector, _serversCount);
+
+            watch.Stop();
+
+            DataManipulation.SendMessage(clientStream, JsonConvert.SerializeObject(x));
+
+            Console.WriteLine($"SLAE solved for client {client.Client.RemoteEndPoint}");
+            long executionTime = watch.ElapsedMilliseconds;
+            Console.WriteLine($"Execution time: {executionTime} ms");
+            DataManipulation.SendMessage(clientStream, executionTime.ToString());
 
             //Task.Run(ConnectionReceiving);
             //Task.Run(ClientHandling);
@@ -93,12 +128,18 @@ namespace Server
 
                     //получение СЛАУ от клиента
                     int matrixSize = JsonConvert.DeserializeObject<int>(DataManipulation.GetMessage(clientStream));
+                    Console.WriteLine($"Matrix size: {matrixSize}");
+                    
                     List<float[]> matrix = new List<float[]>(matrixSize);
+
                     for (int i = 0; i < matrixSize; i++)
                     {
-                        float[] matrixRow = JsonConvert.DeserializeObject<float[]>(DataManipulation.GetMessage(clientStream));
+                        var message = DataManipulation.GetMessage(clientStream);
+                        Console.WriteLine(message);
+                        float[] matrixRow = JsonConvert.DeserializeObject<float[]>(message);
                         matrix.Add(matrixRow);
                     }
+
                     float[] vector = JsonConvert.DeserializeObject<float[]>(DataManipulation.GetMessage(clientStream));
 
                     Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");

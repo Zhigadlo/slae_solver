@@ -36,6 +36,9 @@ namespace Client
             
             SendMessage(JsonConvert.SerializeObject(vector));
 
+            Console.WriteLine("SLAE sent to server");
+            Console.WriteLine("Waiting for SLAE solution...");
+
             Console.WriteLine(DataManipulation.GetMessage(_stream));
 
             var answer = DataManipulation.GetMessage(_stream);
