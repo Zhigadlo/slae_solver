@@ -78,13 +78,19 @@ namespace Server
 
             for (i = 0; i < matrixSize; i++)
             {
-                var message = DataManipulation.GetMessage(clientStream);
-                //Console.WriteLine(message);
-                float[] matrixRow = JsonConvert.DeserializeObject<float[]>(message);
+                float[] matrixRow = new float[matrixSize];
+                for(int j = 0; j < matrixSize; j++)
+                {
+                    var message = DataManipulation.GetMessage(clientStream);
+                    Console.WriteLine(message);
+                    matrixRow[j] = JsonConvert.DeserializeObject<float>(message);
+                }
                 matrix.Add(matrixRow);
             }
 
-            float[] vector = JsonConvert.DeserializeObject<float[]>(DataManipulation.GetMessage(clientStream));
+            float[] vector = new float[matrixSize];
+            for(int j = 0; j < matrixSize; j++)
+                vector[j] = JsonConvert.DeserializeObject<float>(DataManipulation.GetMessage(clientStream));
 
             Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");
 

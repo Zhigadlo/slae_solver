@@ -24,7 +24,7 @@ namespace Domain
                 var message = data.ToString();
 
                 if (message.StartsWith(_startMarker) && message.EndsWith(_endMarker))
-                    return message.Substring(_startMarker.Length, data.Length - _endMarker.Length - _startMarker.Length);
+                    return message.Substring(_startMarker.Length, message.Length - _endMarker.Length - _startMarker.Length);
 
                 throw new Exception("Received corrupted message");
             }
@@ -35,7 +35,11 @@ namespace Domain
         }
         public static void SendMessage(NetworkStream stream, string message)
         {
-            byte[] buffer = Encoding.UTF8.GetBytes(string.Concat(_startMarker, message, _endMarker));
+            StringBuilder data = new StringBuilder();
+            data.Append(_startMarker);
+            data.Append(message);
+            data.Append(_endMarker);
+            byte[] buffer = Encoding.UTF8.GetBytes(data.ToString());
             stream.Write(buffer, 0, buffer.Length);
         }
     }

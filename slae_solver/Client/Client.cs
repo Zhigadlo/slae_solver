@@ -30,11 +30,33 @@ namespace Client
             //отпаравка размера матрицы серверу
             SendMessage(JsonConvert.SerializeObject(matrix.Count()));
 
-            //отправка СЛАУ серверу
+            //отправка матрицы коэффициентов
             foreach(var row in matrix)
-               SendMessage(JsonConvert.SerializeObject(row));
-            
-            SendMessage(JsonConvert.SerializeObject(vector));
+            {
+                string msg = JsonConvert.SerializeObject(row);
+                Console.WriteLine(msg);
+                SendMessage(msg);
+            }
+            //foreach(var row in matrix)
+            //{
+            //    foreach (var value in row)
+            //    {
+            //        var message = JsonConvert.SerializeObject(value);
+            //        Console.WriteLine(message);
+            //        SendMessage(message);
+            //    }
+            //}
+
+            //отправка вектора свободных членов
+            var message = JsonConvert.SerializeObject(vector);
+            Console.WriteLine(message);
+            SendMessage(message);
+            //foreach(var value in vector)
+            //{
+            //    var message = JsonConvert.SerializeObject(value);
+            //    Console.WriteLine(message);
+            //    SendMessage(message);
+            //}
 
             Console.WriteLine("SLAE sent to server");
             Console.WriteLine("Waiting for SLAE solution...");
