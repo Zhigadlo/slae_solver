@@ -1,6 +1,6 @@
 ﻿{
   "NetworkSettings": {
-    "hostname": "192.168.241.180",
+    "hostname": "192.168.0.130",
     "port": "8888"
   }
 }

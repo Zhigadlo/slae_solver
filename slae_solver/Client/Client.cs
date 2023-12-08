@@ -30,33 +30,10 @@ namespace Client
             //отпаравка размера матрицы серверу
             SendMessage(JsonConvert.SerializeObject(matrix.Count()));
 
-            //отправка матрицы коэффициентов
-            foreach(var row in matrix)
-            {
-                string msg = JsonConvert.SerializeObject(row);
-                Console.WriteLine(msg);
-                SendMessage(msg);
-            }
-            //foreach(var row in matrix)
-            //{
-            //    foreach (var value in row)
-            //    {
-            //        var message = JsonConvert.SerializeObject(value);
-            //        Console.WriteLine(message);
-            //        SendMessage(message);
-            //    }
-            //}
-
-            //отправка вектора свободных членов
-            var message = JsonConvert.SerializeObject(vector);
-            Console.WriteLine(message);
-            SendMessage(message);
-            //foreach(var value in vector)
-            //{
-            //    var message = JsonConvert.SerializeObject(value);
-            //    Console.WriteLine(message);
-            //    SendMessage(message);
-            //}
+            matrix.Add(vector);
+            string matrixData = JsonConvert.SerializeObject(matrix);
+            Console.WriteLine("Sending matrix data to server...");
+            DataManipulation.SendMessage(_stream, matrixData);
 
             Console.WriteLine("SLAE sent to server");
             Console.WriteLine("Waiting for SLAE solution...");
@@ -75,10 +52,13 @@ namespace Client
         }
         public void Connect()
         {
-            Console.Write("Enter server ip: ");
-            string ip = Console.ReadLine();
-            Console.Write("Enter port: ");
-            int port = int.Parse(Console.ReadLine());
+            //Console.Write("Enter server ip: ");
+            //string ip = Console.ReadLine();
+            //Console.Write("Enter port: ");
+            //int port = int.Parse(Console.ReadLine());
+
+            string ip = "192.168.0.130";
+            int port = 8888;
 
             _client = new TcpClient(ip, port);
             _stream = _client.GetStream();

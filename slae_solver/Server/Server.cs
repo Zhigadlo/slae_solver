@@ -50,22 +50,7 @@ namespace Server
             }
 
             Console.WriteLine("All node servers connected and ready to work:)");
-
-            //поток для принятия клиентов
-            //Thread clientConnnectionThread = new Thread(new ThreadStart(ConnectionReceiving));
-            //Thread clientHandlingThread = new Thread(new ThreadStart(ClientHandling));
-
-            //clientConnnectionThread.Start();
-            //clientHandlingThread.Start();
-
-            //clientConnnectionThread.Join();
-            //clientHandlingThread.Join();
-
-            //while (true)
-            //{
-            //    ConnectionReceiving();
-            //    ClientHandling();
-            //}
+            Console.WriteLine("Waiting for clients connections...");
             TcpClient client = _tcpListener.AcceptTcpClient();
             var clientStream = client.GetStream();
             DataManipulation.SendMessage(clientStream, "Server started handling your request");
@@ -74,23 +59,15 @@ namespace Server
             int matrixSize = JsonConvert.DeserializeObject<int>(DataManipulation.GetMessage(clientStream));
             Console.WriteLine($"Matrix size: {matrixSize}");
 
-            List<float[]> matrix = new List<float[]>(matrixSize);
+            Console.WriteLine("Receiving matrix data...");
 
-            for (i = 0; i < matrixSize; i++)
-            {
-                float[] matrixRow = new float[matrixSize];
-                for(int j = 0; j < matrixSize; j++)
-                {
-                    var message = DataManipulation.GetMessage(clientStream);
-                    Console.WriteLine(message);
-                    matrixRow[j] = JsonConvert.DeserializeObject<float>(message);
-                }
-                matrix.Add(matrixRow);
-            }
+            string matrixData = DataManipulation.GetMessage(clientStream);
+            //Console.WriteLine(matrixData);
 
-            float[] vector = new float[matrixSize];
-            for(int j = 0; j < matrixSize; j++)
-                vector[j] = JsonConvert.DeserializeObject<float>(DataManipulation.GetMessage(clientStream));
+            List<float[]> matrix = JsonConvert.DeserializeObject<List<float[]>>(matrixData);
+
+            float[] vector = matrix.Last();
+            matrix.RemoveAt(matrix.Count - 1);
 
             Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");
 
