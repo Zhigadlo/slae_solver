@@ -78,12 +78,15 @@ namespace Server
 
             watch.Stop();
 
-            DataManipulation.SendMessage(clientStream, JsonConvert.SerializeObject(x));
+            ResultData result = new ResultData
+            {
+                X = x,
+                ExecutionTime = watch.ElapsedMilliseconds
+            };
 
             Console.WriteLine($"SLAE solved for client {client.Client.RemoteEndPoint}");
-            long executionTime = watch.ElapsedMilliseconds;
-            Console.WriteLine($"Execution time: {executionTime} ms");
-            DataManipulation.SendMessage(clientStream, executionTime.ToString());
+            Console.WriteLine($"Execution time: {result.ExecutionTime} ms");
+            DataManipulation.SendMessage(clientStream, JsonConvert.SerializeObject(result));
 
             //Task.Run(ConnectionReceiving);
             //Task.Run(ClientHandling);

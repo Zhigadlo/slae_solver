@@ -38,15 +38,15 @@ namespace Client
             Console.WriteLine("SLAE sent to server");
             Console.WriteLine("Waiting for SLAE solution...");
 
-            Console.WriteLine(DataManipulation.GetMessage(_stream));
+            //Console.WriteLine(DataManipulation.GetMessage(_stream));
 
             var answer = DataManipulation.GetMessage(_stream);
-            float[] x = JsonConvert.DeserializeObject<float[]>(answer);
-            Console.WriteLine("Slae solved:)");
+            Console.WriteLine(answer);
 
-            long executionTime = JsonConvert.DeserializeObject<long>(DataManipulation.GetMessage(_stream));
-            Console.WriteLine($"Slae was solved for {executionTime} ms");
-            WriteAnswer(x);
+            ResultData result = JsonConvert.DeserializeObject<ResultData>(answer);
+
+            Console.WriteLine($"Slae was solved for {result.ExecutionTime} ms");
+            WriteAnswer(result.X);
             Console.WriteLine($"Answer was written to file {_settings.AnswerPath}");
 
         }
