@@ -53,7 +53,6 @@ namespace Server
             Console.WriteLine("Waiting for clients connections...");
             TcpClient client = _tcpListener.AcceptTcpClient();
             var clientStream = client.GetStream();
-            DataManipulation.SendMessage(clientStream, "Server started handling your request");
 
             //получение СЛАУ от клиента
             int matrixSize = JsonConvert.DeserializeObject<int>(DataManipulation.GetMessage(clientStream));

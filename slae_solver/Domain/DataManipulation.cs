@@ -7,7 +7,7 @@ namespace Domain
     {
         private const string StartMarker = "<msg>";
         private const string EndMarker = "</msg>";
-        private const int BufferSize = 1024;
+        private const int BufferSize = 8192;
         public static string GetMessage(NetworkStream stream)
         {
             if (stream.CanRead)
