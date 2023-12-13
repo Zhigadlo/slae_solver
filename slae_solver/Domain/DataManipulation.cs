@@ -5,26 +5,26 @@ namespace Domain
 {
     public class DataManipulation
     {
-        private static string _startMarker = "<msg>";
-        private static string _endMarker = "</msg>";
+        private const string StartMarker = "<msg>";
+        private const string EndMarker = "</msg>";
+        private const int BufferSize = 8192;
         public static string GetMessage(NetworkStream stream)
         {
             if (stream.CanRead)
             {
-                byte[] messageBuffer = new byte[256];
+                byte[] messageBuffer = new byte[BufferSize];
                 StringBuilder data = new StringBuilder();
                 int bytesRead;
-                do
+                while (!data.ToString().EndsWith(EndMarker))
                 {
                     bytesRead = stream.Read(messageBuffer, 0, messageBuffer.Length);
                     data.AppendFormat("{0}", Encoding.UTF8.GetString(messageBuffer, 0, bytesRead));
                 }
-                while (!data.ToString().EndsWith(_endMarker));
 
                 var message = data.ToString();
 
-                if (message.StartsWith(_startMarker) && message.EndsWith(_endMarker))
-                    return message.Substring(_startMarker.Length, data.Length - _endMarker.Length - _startMarker.Length);
+                if (message.StartsWith(StartMarker) && message.EndsWith(EndMarker))
+                    return message.Substring(StartMarker.Length, message.Length - EndMarker.Length - StartMarker.Length);
 
                 throw new Exception("Received corrupted message");
             }
@@ -35,8 +35,22 @@ namespace Domain
         }
         public static void SendMessage(NetworkStream stream, string message)
         {
-            byte[] buffer = Encoding.UTF8.GetBytes(string.Concat(_startMarker, message, _endMarker));
-            stream.Write(buffer, 0, buffer.Length);
+            StringBuilder data = new StringBuilder();
+            data.Append(StartMarker);
+            data.Append(message);
+            data.Append(EndMarker);
+            byte[] buffer = Encoding.UTF8.GetBytes(data.ToString());
+            int bytesSent = 0;
+            int bytesLeft = buffer.Length;
+
+            // Отправляем данные частями
+            while (bytesLeft > 0)
+            {
+                int sendSize = Math.Min(bytesLeft, BufferSize); //  Определяем размер отправляемых данных
+                stream.Write(buffer, bytesSent, sendSize);
+                bytesSent += sendSize;
+                bytesLeft -= sendSize;
+            }
         }
     }
 }

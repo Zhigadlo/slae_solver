@@ -5,11 +5,13 @@ VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csproj", "{6E6BD5F9-59F3-4379-9A22-EF8416886040}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client\Client.csproj", "{8B5F3C5A-C7D4-4EE4-8ADA-0FCDE537E6FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NodeServer", "NodeServer\NodeServer.csproj", "{8B5F3C5A-C7D4-4EE4-8ADA-0FCDE537E6FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{C19AD0B8-5A3E-4B74-927D-08BFF51F09C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlaeSolverTests", "SlaeSolverTests\SlaeSolverTests.csproj", "{2479761C-2D86-43AA-A6B7-A5B0DD341B04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlaeSolverTests", "SlaeSolverTests\SlaeSolverTests.csproj", "{2479761C-2D86-43AA-A6B7-A5B0DD341B04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{72550B8B-6C0A-4071-B42E-57A7B2DD3CFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{2479761C-2D86-43AA-A6B7-A5B0DD341B04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2479761C-2D86-43AA-A6B7-A5B0DD341B04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2479761C-2D86-43AA-A6B7-A5B0DD341B04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72550B8B-6C0A-4071-B42E-57A7B2DD3CFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72550B8B-6C0A-4071-B42E-57A7B2DD3CFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72550B8B-6C0A-4071-B42E-57A7B2DD3CFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72550B8B-6C0A-4071-B42E-57A7B2DD3CFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

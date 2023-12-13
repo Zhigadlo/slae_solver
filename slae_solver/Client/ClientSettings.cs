@@ -4,30 +4,11 @@ namespace Client
 {
     public class ClientSettings
     {
+        private static string? _dataPath = null;
+        private static string? _answerPath = null;
+        private static string? _matrixFilename = null;
+        private static string? _vectorFilename = null;
         private static IConfiguration? _config = null;
-        private static string? _hostname = null;
-        private static int _port = -1;
-
-        public string HostName
-        {
-            get
-            {
-                if (_hostname == null)
-                    _hostname = GetHostName();
-
-                return _hostname;
-            }
-        }
-        public int Port
-        {
-            get
-            {
-                if (_port == -1)
-                    _port = GetPort();
-
-                return _port;
-            }
-        }
         public IConfiguration Configuration
         {
             get
@@ -39,8 +20,47 @@ namespace Client
             }
         }
 
-        private string GetHostName() => Configuration.GetSection("NetworkSettings").GetSection("hostname").Value;
-        private int GetPort() => int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
+        public string AnswerPath
+        {
+            get
+            {
+                if (_answerPath == null)
+                    _answerPath = GetAnswerPath();
+
+                return _answerPath;
+            }
+        }
+        public string DataPath
+        {
+            get
+            {
+                if (_dataPath == null)
+                    _dataPath = GetDataPath();
+
+                return _dataPath;
+            }
+        }
+        public string MatrixFilename
+        {
+            get
+            {
+                if (_matrixFilename == null)
+                    _matrixFilename = GetMatrixFilename();
+
+                return _matrixFilename;
+            }
+        }
+        public string VectorFilename
+        {
+            get
+            {
+                if (_vectorFilename == null)
+                    _vectorFilename = GetVectorFilename();
+
+                return _vectorFilename;
+            }
+        }
+
         private IConfiguration GetConfiguration()
         {
             string configFileName = "config.json";
@@ -51,5 +71,10 @@ namespace Client
 
             return builder.Build();
         }
+
+        private string GetAnswerPath() => Configuration.GetSection("ClientSettings").GetSection("answerPath").Value;
+        private string GetDataPath() => Configuration.GetSection("ClientSettings").GetSection("dataPath").Value;
+        private string GetVectorFilename() => Configuration.GetSection("ClientSettings").GetSection("files").GetSection("vector").Value;
+        private string GetMatrixFilename() => Configuration.GetSection("ClientSettings").GetSection("files").GetSection("matrix").Value;
     }
 }

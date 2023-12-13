@@ -1,6 +1,10 @@
-﻿{
-  "NetworkSettings": {
-    "hostname": "192.168.0.130",
-    "port": "8888"
+{
+  "ClientSettings": {
+    "dataPath": "D:\\Work\\Projects\\slae_solver\\slae_solver\\SlaeSolverTests\\Files\\",
+    "answerPath": "C:\\Users\\vladi\\OneDrive\\Рабочий стол\\X.txt",
+    "files": {
+      "matrix": "A3.txt",
+      "vector": "B3.txt"
+    }
   }
 }

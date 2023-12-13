@@ -1,22 +1,21 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System.Net;
 
-namespace Server
+namespace NodeServer
 {
-    public class ServerSettings
+    public class NodeServerSettings
     {
         private static IConfiguration? _config = null;
-        private static IPAddress? _ip = null;
+        private static string? _hostname = null;
         private static int _port = -1;
 
-        public IPAddress Ip
+        public string HostName
         {
             get
             {
-                if (_ip == null)
-                    _ip = GetIp();
+                if (_hostname == null)
+                    _hostname = GetHostName();
 
-                return _ip;
+                return _hostname;
             }
         }
         public int Port
@@ -40,7 +39,7 @@ namespace Server
             }
         }
 
-        private IPAddress GetIp() => IPAddress.Parse(Configuration.GetSection("NetworkSettings").GetSection("IP").Value);
+        private string GetHostName() => Configuration.GetSection("NetworkSettings").GetSection("hostname").Value;
         private int GetPort() => int.Parse(Configuration.GetSection("NetworkSettings").GetSection("port").Value);
         private IConfiguration GetConfiguration()
         {

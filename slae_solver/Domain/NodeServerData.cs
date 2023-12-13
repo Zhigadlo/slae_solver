@@ -1,6 +1,6 @@
 ﻿namespace Domain
 {
-    public class ClientData
+    public class NodeServerData
     {
         public float[] MatrixRow { get; set; }
         public float[] Previous { get; set; }
