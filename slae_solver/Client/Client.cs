@@ -44,24 +44,30 @@ namespace Client
 
             Console.WriteLine($"Slae was solved for {result.ExecutionTime} ms");
             WriteAnswer(result.X);
-            Console.WriteLine($"Answer was written to file {_settings.AnswerPath}");
 
         }
-        public void Connect()
+        public bool Connect()
         {
+            string ip = "192.168.0.130";
+            int port = 8888;
             //Console.Write("Enter server ip: ");
             //string ip = Console.ReadLine();
             //Console.Write("Enter port: ");
             //int port = int.Parse(Console.ReadLine());
 
-            string ip = "192.168.0.130";
-            int port = 8888;
-
             _client = new TcpClient(ip, port);
             _stream = _client.GetStream();
+            DataManipulation.SendMessage(_stream, "Client");
+            string message = DataManipulation.GetMessage(_stream);
+            if (message == "OK")
+            {
+                Console.WriteLine($"Connected to host {ip}:{port}");
+                return true;
+            }
 
-            Console.WriteLine($"Connected to host {ip}:{port}");
-            Console.WriteLine("You are in queue for handling your request...");
+            Console.WriteLine($"Connection with host {_client.Client.RemoteEndPoint} failed");
+
+            return false;
         }
 
         private void SendMessage(string message) => DataManipulation.SendMessage(_stream, message);

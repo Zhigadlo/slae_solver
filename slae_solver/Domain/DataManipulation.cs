@@ -46,7 +46,7 @@ namespace Domain
             // Отправляем данные частями
             while (bytesLeft > 0)
             {
-                int sendSize = Math.Min(bytesLeft, BufferSize); // Определяем размер отправляемых данных
+                int sendSize = Math.Min(bytesLeft, BufferSize); //  Определяем размер отправляемых данных
                 stream.Write(buffer, bytesSent, sendSize);
                 bytesSent += sendSize;
                 bytesLeft -= sendSize;

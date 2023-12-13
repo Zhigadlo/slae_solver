@@ -42,90 +42,47 @@ namespace Server
             while (i < _serversCount)
             {
                 var nodeServer = _tcpListener.AcceptTcpClient();
-                _servers.Add(nodeServer);
                 var serverStream = nodeServer.GetStream();
-                _serverStreams.Add(i, serverStream);
-                Console.WriteLine($"Node server {nodeServer.Client.RemoteEndPoint} connected");
-                i++;
+                string message = DataManipulation.GetMessage(serverStream);
+                if (message == "NodeServer")
+                {
+                    _servers.Add(nodeServer);
+                    _serverStreams.Add(i, serverStream);
+                    DataManipulation.SendMessage(serverStream, "OK");
+                    Console.WriteLine($"Node server {nodeServer.Client.RemoteEndPoint} connected");
+                    i++;
+                }
+                else
+                {
+                    DataManipulation.SendMessage(serverStream, "Access denied");
+                    Console.WriteLine($"Access denied to {nodeServer.Client.RemoteEndPoint}");
+                }
             }
 
             Console.WriteLine("All node servers connected and ready to work:)");
-            Console.WriteLine("Waiting for clients connections...");
-            TcpClient client = _tcpListener.AcceptTcpClient();
-            var clientStream = client.GetStream();
-
-            //получение СЛАУ от клиента
-            int matrixSize = JsonConvert.DeserializeObject<int>(DataManipulation.GetMessage(clientStream));
-            Console.WriteLine($"Matrix size: {matrixSize}");
-
-            Console.WriteLine("Receiving matrix data...");
-
-            string matrixData = DataManipulation.GetMessage(clientStream);
-            //Console.WriteLine(matrixData);
-
-            List<float[]> matrix = JsonConvert.DeserializeObject<List<float[]>>(matrixData);
-
-            float[] vector = matrix.Last();
-            matrix.RemoveAt(matrix.Count - 1);
-
-            Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");
-
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-
-            float[] x = Solve(matrix, vector, _serversCount);
-
-            watch.Stop();
-
-            ResultData result = new ResultData
-            {
-                X = x,
-                ExecutionTime = watch.ElapsedMilliseconds
-            };
-
-            Console.WriteLine($"SLAE solved for client {client.Client.RemoteEndPoint}");
-            Console.WriteLine($"Execution time: {result.ExecutionTime} ms");
-            DataManipulation.SendMessage(clientStream, JsonConvert.SerializeObject(result));
-
-            //Task.Run(ConnectionReceiving);
-            //Task.Run(ClientHandling);
-            
-        }
-        private void ConnectionReceiving()
-        {
-            Console.WriteLine("Waiting for client connections...");
             while (true)
             {
+                Console.WriteLine("Waiting for clients connections...");
                 TcpClient client = _tcpListener.AcceptTcpClient();
-                _clients.Enqueue(client);
-                Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
-            }
-        }
-
-        private void ClientHandling()
-        {
-            while (true)
-            {
-                if (_clients.TryDequeue(out var client))
+                var clientStream = client.GetStream();
+                string message = DataManipulation.GetMessage(clientStream);
+                if(message == "Client")
                 {
-                    var clientStream = client.GetStream();
-                    DataManipulation.SendMessage(clientStream, "Server started handling your request");
-
+                    DataManipulation.SendMessage(clientStream, "OK");
+                    Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
                     //получение СЛАУ от клиента
                     int matrixSize = JsonConvert.DeserializeObject<int>(DataManipulation.GetMessage(clientStream));
                     Console.WriteLine($"Matrix size: {matrixSize}");
-                    
-                    List<float[]> matrix = new List<float[]>(matrixSize);
 
-                    for (int i = 0; i < matrixSize; i++)
-                    {
-                        var message = DataManipulation.GetMessage(clientStream);
-                        Console.WriteLine(message);
-                        float[] matrixRow = JsonConvert.DeserializeObject<float[]>(message);
-                        matrix.Add(matrixRow);
-                    }
+                    Console.WriteLine("Receiving matrix data...");
 
-                    float[] vector = JsonConvert.DeserializeObject<float[]>(DataManipulation.GetMessage(clientStream));
+                    string matrixData = DataManipulation.GetMessage(clientStream);
+                    //Console.WriteLine(matrixData);
+
+                    List<float[]> matrix = JsonConvert.DeserializeObject<List<float[]>>(matrixData);
+
+                    float[] vector = matrix.Last();
+                    matrix.RemoveAt(matrix.Count - 1);
 
                     Console.WriteLine($"Starting to solve matrix {matrix.Count()}x{matrix.First().Length}");
 
@@ -136,12 +93,20 @@ namespace Server
 
                     watch.Stop();
 
-                    DataManipulation.SendMessage(clientStream, JsonConvert.SerializeObject(x));
+                    ResultData result = new ResultData
+                    {
+                        X = x,
+                        ExecutionTime = watch.ElapsedMilliseconds
+                    };
 
                     Console.WriteLine($"SLAE solved for client {client.Client.RemoteEndPoint}");
-                    long executionTime = watch.ElapsedMilliseconds;
-                    Console.WriteLine($"Execution time: {executionTime} ms");
-                    DataManipulation.SendMessage(clientStream, executionTime.ToString());
+                    Console.WriteLine($"Execution time: {result.ExecutionTime} ms");
+                    DataManipulation.SendMessage(clientStream, JsonConvert.SerializeObject(result));
+                }
+                else
+                {
+                    DataManipulation.SendMessage(clientStream, "Access denied");
+                    Console.WriteLine($"Access denied to {client.Client.RemoteEndPoint}");
                 }
             }
         }

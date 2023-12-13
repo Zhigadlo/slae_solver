@@ -1,28 +1,8 @@
 ﻿using (NodeServer.NodeServer nodeServer = new NodeServer.NodeServer())
 {
-    try
+    if (nodeServer.Connect())
     {
-        bool isSlaeSolved = false;
-        while (!isSlaeSolved)
-        {
-            var data = nodeServer.GetDataFromServer();
-            if (data.IsSlaeSolved)
-            {
-                isSlaeSolved = data.IsSlaeSolved;
-                continue;
-            }
-
-            var sum = nodeServer.JacobiHandle(data);
-            nodeServer.SendMessage(sum.ToString());
-            Console.WriteLine($"Sent data to server: {sum}");
-        }
-
-        Console.WriteLine("SLAE solved:)");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine(ex.Message);
-        Console.ResetColor();
+        nodeServer.Start();
     }
 }
 
